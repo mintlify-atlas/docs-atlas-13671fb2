@@ -1,80 +1,240 @@
 ---
-title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+title: Quickstart
+description: 'Get started with PagerDuty MCP Server in 5 minutes'
 ---
 
-## Get started in three steps
+This guide will help you quickly set up the PagerDuty MCP Server and start using it with VS Code.
 
-Get your documentation site running locally and make your first customization.
+## Prerequisites
 
-### Step 1: Set up your local environment
+Before you begin, you'll need:
 
-<AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
+1. **Python 3.12** installed on your system
+2. **A PagerDuty account** with access to create API tokens
+3. **An MCP-enabled client** (we'll use VS Code in this guide)
+
+### Create a PagerDuty User API Token
+
+The PagerDuty MCP Server requires a User API Token to authenticate with your account.
+
+<Steps>
+  <Step title="Navigate to User Settings">
+    Click on your user profile icon in PagerDuty, then select **My Profile** → **User Settings**.
     
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
+    <Note>
+      For **Freemium** accounts, permissions for generating User API tokens are limited to the user role as defined in the [PagerDuty documentation](https://support.pagerduty.com/main/docs/user-roles).
+    </Note>
+  </Step>
+  
+  <Step title="Access the API Access section">
+    In your user settings, locate the **API Access** section.
+  </Step>
+  
+  <Step title="Create the token">
+    Click the **Create API User Token** button and follow the prompts to generate a new token.
+  </Step>
+  
+  <Step title="Save the token securely">
+    **Copy the generated token and store it securely**. You'll need this token in the next steps.
     
-    <Tip>Your preview updates automatically as you edit files.</Tip>
-  </Accordion>
-</AccordionGroup>
-
-### Step 2: Deploy your changes
-
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
-    
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
-
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
-
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
-
-### Step 3: Go live
-
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
-
-## Next steps
-
-Now that you have your docs running, explore these key features:
-
-<CardGroup cols={2}>
-
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
-
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
-
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
-
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
-
-</CardGroup>
+    <Warning>
+      Keep your API token secure! It has the same permissions as your user account. Never commit it to version control or share it publicly.
+    </Warning>
+  </Step>
+</Steps>
 
 <Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
+  Use of the PagerDuty User API Token is subject to the [PagerDuty Developer Agreement](https://developer.pagerduty.com/docs/pagerduty-developer-agreement).
 </Note>
+
+## Installation
+
+The easiest way to use the PagerDuty MCP Server is via `uvx`, which automatically manages the Python environment:
+
+```bash
+uvx pagerduty-mcp
+```
+
+That's it! The `uvx` command will download and run the server without requiring manual installation.
+
+<Tip>
+  For other installation methods (pip, from source), see the [Installation Guide](/installation).
+</Tip>
+
+## Configure VS Code
+
+Now let's configure VS Code to use the PagerDuty MCP Server.
+
+<Steps>
+  <Step title="Install VS Code with MCP support">
+    Ensure you're using a recent version of VS Code that supports MCP.
+  </Step>
+  
+  <Step title="Open VS Code Settings">
+    Open VS Code settings:
+    - **macOS**: `Cmd+,`
+    - **Windows/Linux**: `Ctrl+,`
+    
+    Or go to **File** → **Preferences** → **Settings**
+  </Step>
+  
+  <Step title="Enable MCP">
+    Search for "mcp" and ensure **"Mcp: Enabled"** is checked under **Features** → **Chat**.
+  </Step>
+  
+  <Step title="Configure the server">
+    Click **"Edit in settings.json"** under **"Mcp > Discovery: Servers"**.
+    
+    Add the following configuration to your `settings.json`:
+    
+    ```json settings.json
+    {
+        "mcp": {
+            "inputs": [
+                {
+                    "type": "promptString",
+                    "id": "pagerduty-api-key",
+                    "description": "PagerDuty API Key",
+                    "password": true
+                }
+            ],
+            "servers": {
+                "pagerduty-mcp": { 
+                    "type": "stdio",
+                    "command": "uvx",
+                    "args": [
+                        "pagerduty-mcp"
+                    ],
+                    "env": {
+                        "PAGERDUTY_USER_API_KEY": "${input:pagerduty-api-key}",
+                        "PAGERDUTY_API_HOST": "https://api.pagerduty.com"
+                    }
+                }
+            }
+        }
+    }
+    ```
+    
+    <Note>
+      If your PagerDuty account is in the **EU region**, update `PAGERDUTY_API_HOST` to `https://api.eu.pagerduty.com`
+    </Note>
+  </Step>
+  
+  <Step title="Restart VS Code">
+    Restart VS Code for the changes to take effect.
+  </Step>
+</Steps>
+
+## Try Your First Command
+
+Now let's test the integration!
+
+<Steps>
+  <Step title="Open VS Code Chat">
+    Open the Chat view in VS Code:
+    - Go to **View** → **Chat**
+    - Or use the keyboard shortcut
+  </Step>
+  
+  <Step title="Enable Agent mode">
+    Make sure **Agent** mode is selected in the Chat view. You can enable or disable specific tools by clicking the 🛠️ icon.
+  </Step>
+  
+  <Step title="Enter your API key">
+    When prompted, enter the PagerDuty API token you created earlier.
+  </Step>
+  
+  <Step title="Run a command">
+    Try one of these example commands:
+    
+    ```
+    Show me the latest incident
+    ```
+    
+    ```
+    Who is on-call right now?
+    ```
+    
+    ```
+    List my event orchestrations
+    ```
+    
+    The PagerDuty MCP Server will use the appropriate tools to fetch the information from your PagerDuty account.
+  </Step>
+</Steps>
+
+<Tip>
+  By default, the server runs in **read-only mode**, so you can safely query your PagerDuty data without risk of accidental changes.
+</Tip>
+
+## Enable Write Operations (Optional)
+
+To enable write operations like creating incidents or schedule overrides, add the `--enable-write-tools` flag to your configuration:
+
+```json settings.json
+{
+    "mcp": {
+        "servers": {
+            "pagerduty-mcp": { 
+                "type": "stdio",
+                "command": "uvx",
+                "args": [
+                    "pagerduty-mcp",
+                    "--enable-write-tools"  // Add this line
+                ],
+                "env": {
+                    "PAGERDUTY_USER_API_KEY": "${input:pagerduty-api-key}",
+                    "PAGERDUTY_API_HOST": "https://api.pagerduty.com"
+                }
+            }
+        }
+    }
+}
+```
+
+<Warning>
+  Write operations can modify your PagerDuty account. Use this flag carefully and ensure you understand what each command will do before confirming.
+</Warning>
+
+With write tools enabled, you can:
+
+- Create incidents: `Create a new incident for the API service`
+- Add notes: `Add a note to incident #123 saying "Still investigating"`
+- Create schedule overrides: `Override the on-call schedule for tomorrow`
+- Manage teams: `Add user@example.com to the platform team`
+- And much more!
+
+## Managing the Server
+
+You can manage your MCP servers using the VS Code command palette:
+
+1. Open the command palette (`Cmd+Shift+P` or `Ctrl+Shift+P`)
+2. Search for **"MCP: List Servers"**
+3. You'll see the PagerDuty MCP Server listed
+4. You can start, stop, or restart the server from here
+
+<Tip>
+  If you encounter any issues, try restarting the server from the command palette.
+</Tip>
+
+## Next Steps
+
+You're all set! Here are some resources to help you get the most out of the PagerDuty MCP Server:
+
+<CardGroup cols={2}>
+  <Card title="Installation Guide" icon="download" href="/installation">
+    Explore other installation methods and troubleshooting
+  </Card>
+  
+  <Card title="Available Tools" icon="toolbox" href="/tools/overview">
+    Browse all 60+ available tools
+  </Card>
+  
+  <Card title="Other Clients" icon="window" href="/clients/cursor">
+    Configure Cursor, Claude Desktop, and other clients
+  </Card>
+  
+  <Card title="Usage Guides" icon="book" href="/guides/incident-management">
+    Learn common workflows and best practices
+  </Card>
+</CardGroup>

@@ -1,0 +1,148 @@
+---
+title: "append_event_orchestration_router_rule"
+description: "Add a new routing rule to an event orchestration router"
+---
+
+## Overview
+
+Appends a new routing rule to the end of an event orchestration's router rules. This is a convenience tool that retrieves the current configuration, adds your new rule, and updates the router.
+
+<Warning>
+This is a **write** tool that modifies your PagerDuty account. It requires the `--enable-write-tools` flag to be enabled.
+</Warning>
+
+## Parameters
+
+<ParamField path="orchestration_id" type="string" required>
+  The ID of the event orchestration to append a rule to
+</ParamField>
+
+<ParamField path="new_rule" type="EventOrchestrationRuleCreateRequest" required>
+  The new routing rule to append
+  
+  <Expandable title="EventOrchestrationRuleCreateRequest properties">
+    <ParamField path="label" type="string">
+      Description of this rule's purpose
+      
+      Example: "Route database errors to database team"
+    </ParamField>
+    
+    <ParamField path="conditions" type="array" required>
+      Conditions to evaluate. The rule matches if **any** condition is true.
+      
+      <Expandable title="EventOrchestrationRuleCondition properties">
+        <ParamField path="expression" type="string" required>
+          PCL condition expression
+          
+          Examples:
+          - `event.summary matches part 'database error'`
+          - `event.severity equals 'critical'`
+          - `event.source matches regex 'prod-db-.*'`
+        </ParamField>
+      </Expandable>
+    </ParamField>
+    
+    <ParamField path="actions" type="EventOrchestrationRuleActions" required>
+      Actions to take when this rule matches
+      
+      <Expandable title="properties">
+        <ParamField path="route_to" type="string">
+          The ID of the target service for routing
+          
+          Example: "PSI2I2O"
+          
+          <Tip>
+          Find service IDs using the [list_services](/tools/services) tool
+          </Tip>
+        </ParamField>
+        
+        <ParamField path="dynamic_route_to" type="object">
+          Use event payload contents to dynamically determine the target service. Available to AIOps customers only.
+        </ParamField>
+      </Expandable>
+    </ParamField>
+    
+    <ParamField path="disabled" type="boolean" default="false">
+      Whether this rule should be disabled (not evaluated)
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+## Response
+
+Returns the updated `EventOrchestrationRouter` object with the new rule appended to the end of the rules list.
+
+## How It Works
+
+This tool:
+1. Retrieves the current router configuration
+2. Appends your new rule to the end of the existing rules
+3. Updates the router with the modified configuration
+4. Returns the updated router
+
+The new rule is evaluated **after** all existing rules, so it won't affect existing routing logic.
+
+## Usage Examples
+
+### Add a routing rule
+
+```
+Add a rule to orchestration P1A2B3C that routes events with 'database' in the summary to service PABCDEF
+```
+
+### Add a rule for critical events
+
+```
+Add a routing rule to orchestration P1A2B3C for critical severity events to route to the SRE on-call service
+```
+
+### Add a rule with multiple conditions
+
+```
+Add a rule to orchestration P1A2B3C that routes events from production databases to service PXYZABC
+```
+
+## PCL Expression Examples
+
+PagerDuty Common Expression Language (PCL) is used for rule conditions:
+
+### String matching
+```
+event.summary matches part 'error'
+event.summary matches part 'database'
+event.summary matches regex 'Error: (\\d+)'
+```
+
+### Equality checks
+```
+event.severity equals 'critical'
+event.source equals 'monitoring-system'
+event.custom_details.environment equals 'production'
+```
+
+### Logical operators
+```
+event.severity equals 'critical' && event.source matches part 'prod'
+```
+
+### Field existence
+```
+event.custom_details.region exists
+```
+
+## Important Notes
+
+<Note>
+Rules are evaluated in order. Your new rule will be evaluated **last**, after all existing rules. If an earlier rule matches the event, your new rule won't be evaluated.
+</Note>
+
+<Warning>
+If the orchestration has no valid router configuration, this tool will raise an error.
+</Warning>
+
+## Related Tools
+
+- [update_event_orchestration_router](/tools/event-orchestrations/update-router) - Replace entire router configuration
+- [get_event_orchestration_router](/tools/event-orchestrations/get-router) - View current router configuration
+- [list_services](/tools/services) - Find service IDs for routing
+- [get_event_orchestration](/tools/event-orchestrations/get-orchestration) - Get orchestration details

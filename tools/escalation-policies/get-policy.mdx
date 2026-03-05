@@ -1,0 +1,174 @@
+---
+title: "Get Escalation Policy"
+description: "Retrieve details of a specific escalation policy by ID"
+icon: "arrow-up"
+---
+
+## Overview
+
+The `get_escalation_policy` tool retrieves detailed information about a specific escalation policy, including its escalation rules, targets, timing, and associated services and teams.
+
+<Note>
+This is a **read-only** tool that does not modify any data in your PagerDuty account.
+</Note>
+
+## Parameters
+
+<ParamField path="policy_id" type="string" required>
+  The unique identifier of the escalation policy to retrieve.
+  
+  Example: `"P5DTI0W"`
+</ParamField>
+
+## Response
+
+Returns a detailed escalation policy object.
+
+<ResponseField name="id" type="string">
+  The unique identifier of the escalation policy
+</ResponseField>
+
+<ResponseField name="type" type="string">
+  Always returns `"escalation_policy"`
+</ResponseField>
+
+<ResponseField name="summary" type="string">
+  A short-form description of the escalation policy
+</ResponseField>
+
+<ResponseField name="name" type="string">
+  The name of the escalation policy
+</ResponseField>
+
+<ResponseField name="description" type="string">
+  The description of the escalation policy
+</ResponseField>
+
+<ResponseField name="escalation_rules" type="array">
+  The ordered list of escalation rules for the policy. Each rule defines when and to whom an incident should escalate.
+  
+  <Expandable title="EscalationRule Object">
+    <ResponseField name="id" type="string">
+      The unique identifier of the escalation rule
+    </ResponseField>
+    
+    <ResponseField name="escalation_delay_in_minutes" type="integer">
+      The number of minutes before an unacknowledged incident escalates away from this rule
+    </ResponseField>
+    
+    <ResponseField name="targets" type="array">
+      The targets (users or schedules) an incident should be assigned to upon reaching this rule
+      
+      <Expandable title="Target Object">
+        <ResponseField name="id" type="string">
+          The ID of the escalation target (user or schedule)
+        </ResponseField>
+        
+        <ResponseField name="type" type="string">
+          Either `"user_reference"` or `"schedule_reference"`
+        </ResponseField>
+        
+        <ResponseField name="summary" type="string">
+          A short description of the target
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+    
+    <ResponseField name="escalation_rule_assignment_strategy" type="string">
+      The strategy used to assign the escalation rule. Options:
+      - `"round_robin"` - Rotate assignments among targets
+      - `"assign_to_everyone"` - Notify all targets simultaneously
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="num_loops" type="integer">
+  The number of times the escalation policy will repeat after reaching the end of its escalation. Set to 0 for no looping.
+</ResponseField>
+
+<ResponseField name="on_call_handoff_notifications" type="string">
+  Determines how on-call handoff notifications will be sent. Options:
+  - `"if_has_services"` - Send notifications only if the policy has services (default)
+  - `"always"` - Always send handoff notifications
+</ResponseField>
+
+<ResponseField name="services" type="array">
+  The services using this escalation policy
+</ResponseField>
+
+<ResponseField name="teams" type="array">
+  The teams associated with this escalation policy
+</ResponseField>
+
+<ResponseField name="self_url" type="string">
+  The API URL at which this escalation policy is accessible
+</ResponseField>
+
+<ResponseField name="html_url" type="string">
+  The URL at which this escalation policy is accessible in the PagerDuty web UI
+</ResponseField>
+
+<ResponseField name="created_at" type="datetime">
+  The date/time when this escalation policy was created
+</ResponseField>
+
+<ResponseField name="updated_at" type="datetime">
+  The date/time when this escalation policy was last updated
+</ResponseField>
+
+## Example Usage
+
+<CodeGroup>
+```bash Natural Language
+"Show me the details of escalation policy P5DTI0W"
+```
+
+```bash Get by Name
+"Get the escalation policy for the production team"
+```
+
+```bash Check Configuration
+"What are the escalation rules for policy P5DTI0W?"
+```
+</CodeGroup>
+
+## Use Cases
+
+- **Review escalation flow** - Examine how incidents progress through escalation levels
+- **Verify escalation timing** - Check delay settings between escalation levels
+- **Audit escalation targets** - See which users and schedules are involved in escalations
+- **Understand policy loops** - Determine if and how many times the policy repeats
+- **Check service associations** - View which services use this escalation policy
+
+## Response Example
+
+```json
+{
+  "id": "P5DTI0W",
+  "type": "escalation_policy",
+  "name": "Production Team Escalation",
+  "description": "Primary escalation policy for production services",
+  "escalation_rules": [
+    {
+      "id": "PJHF123",
+      "escalation_delay_in_minutes": 30,
+      "targets": [
+        {
+          "id": "PUSER1",
+          "type": "user_reference",
+          "summary": "John Doe"
+        }
+      ],
+      "escalation_rule_assignment_strategy": "round_robin"
+    }
+  ],
+  "num_loops": 2,
+  "on_call_handoff_notifications": "if_has_services"
+}
+```
+
+## Related Tools
+
+- [List Escalation Policies](/tools/escalation-policies/list-policies) - Retrieve all escalation policies
+- [List On-Calls](/tools/on-call/list-oncalls) - See who is currently on-call
+- [Get Service](/tools/services/get-service) - View service details including escalation policy

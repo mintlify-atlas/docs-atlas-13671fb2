@@ -1,0 +1,308 @@
+---
+title: On-Call Management Guide
+description: Guide to managing on-call schedules and overrides in PagerDuty
+---
+
+This guide covers how to manage on-call schedules, view who's on-call, and create schedule overrides using the PagerDuty MCP server.
+
+## Overview
+
+Effective on-call management ensures the right people are notified at the right time. The MCP server provides tools to view schedules, check current on-call status, and make temporary schedule adjustments.
+
+## Viewing On-Call Status
+
+### Check Who's Currently On-Call
+
+To see who is currently on-call:
+
+```
+Who is on-call right now?
+```
+
+The [`list_oncalls`](/tools/schedules/list-oncalls) tool shows:
+- User currently on-call
+- Schedule name
+- Escalation policy
+- Start and end times of the current on-call period
+
+### Filter On-Call by Schedule
+
+View on-call status for a specific schedule:
+
+```
+Who is on-call for schedule SCHED123?
+```
+
+Provide the `schedule_ids` parameter to filter results.
+
+### Filter On-Call by User
+
+Check if a specific user is currently on-call:
+
+```
+Is user PABCDEF on-call right now?
+```
+
+Use the `user_ids` parameter with [`list_oncalls`](/tools/schedules/list-oncalls).
+
+### View On-Call by Time Range
+
+See who will be on-call during a specific period:
+
+```
+Who will be on-call this weekend?
+```
+
+Specify `since` and `until` parameters to check future on-call assignments.
+
+## Working with Schedules
+
+### List All Schedules
+
+View all schedules in your PagerDuty account:
+
+```
+List all on-call schedules
+```
+
+The [`list_schedules`](/tools/schedules/list-schedules) tool returns schedule names, IDs, and descriptions.
+
+### Get Schedule Details
+
+Retrieve detailed information about a specific schedule:
+
+```
+Show details for schedule SCHED123
+```
+
+The [`get_schedule`](/tools/schedules/get-schedule) tool provides:
+- Schedule layers and rotation patterns
+- Time zone configuration
+- Team associations
+- Schedule restrictions (business hours, weekends, etc.)
+
+### View Users in a Schedule
+
+List all users who participate in a schedule:
+
+```
+Show all users in schedule SCHED123
+```
+
+The [`list_schedule_users`](/tools/schedules/list-schedule-users) tool returns all users configured in any layer of the schedule.
+
+## Creating Schedule Overrides
+
+<Warning>
+Requires `--enable-write-tools` flag
+</Warning>
+
+Schedule overrides allow you to temporarily replace the scheduled on-call person. This is useful for:
+- Covering for someone who's unavailable
+- Swapping shifts between team members
+- Handling planned time off
+
+### Create a Simple Override
+
+Create an override for a specific time period:
+
+```
+Create an override for schedule SCHED123: user PXYZ789 from 2026-03-10T09:00:00Z to 2026-03-10T17:00:00Z
+```
+
+The [`create_schedule_override`](/tools/schedules/create-schedule-override) tool requires:
+- **schedule_id**: The schedule to override
+- **user_id**: The user who will be on-call during the override
+- **start**: ISO 8601 datetime when the override begins
+- **end**: ISO 8601 datetime when the override ends
+
+<Note>
+All times must be in ISO 8601 format with timezone information (e.g., `2026-03-10T09:00:00Z`).
+</Note>
+
+### Create Multiple Overrides
+
+You can create multiple overrides in a single operation:
+
+```
+Create two overrides for schedule SCHED123:
+1. User PABC123 from March 10 9am to 5pm UTC
+2. User PDEF456 from March 11 9am to 5pm UTC
+```
+
+The tool accepts an array of overrides in the `overrides` field.
+
+## Managing Schedules
+
+<Warning>
+Requires `--enable-write-tools` flag
+</Warning>
+
+### Create a New Schedule
+
+Create a new on-call schedule:
+
+```
+Create a new schedule named "Engineering Primary" with a daily rotation starting at 9am UTC
+```
+
+The [`create_schedule`](/tools/schedules/create-schedule) tool requires:
+- **name**: Schedule name
+- **time_zone**: IANA timezone (e.g., "America/New_York")
+- **schedule_layers**: Array of rotation configurations
+
+Each schedule layer defines:
+- **start**: When the schedule begins
+- **rotation_virtual_start**: Reference point for rotation calculation
+- **rotation_turn_length_seconds**: Length of each on-call shift
+- **users**: Array of user references who participate
+
+<Tip>
+Schedule layers allow complex rotations like:
+- Primary on-call (24x7 rotation)
+- Business hours only (weekday 9-5)
+- Weekend coverage (Saturday-Sunday)
+</Tip>
+
+### Update a Schedule
+
+Modify an existing schedule:
+
+```
+Update schedule SCHED123 to use America/Los_Angeles timezone
+```
+
+The [`update_schedule`](/tools/schedules/update-schedule) tool can modify:
+- Schedule name and description
+- Time zone
+- Schedule layers and rotations
+- Restrictions (time-of-day, day-of-week)
+
+## Common On-Call Operations
+
+### Check Next On-Call
+
+Find out who's on-call after the current person:
+
+```
+Who is on-call for schedule SCHED123 tomorrow?
+```
+
+Use [`list_oncalls`](/tools/schedules/list-oncalls) with a future time range.
+
+### Swap On-Call Shifts
+
+To swap shifts between two team members:
+
+1. Create an override for the time period the first person would normally be on-call
+2. Assign the override to the second person
+
+```
+Create an override for schedule SCHED123: swap tomorrow's shift from user PABC to user PDEF
+```
+
+### Cover for PTO
+
+When a team member is taking time off:
+
+```
+Create an override for schedule SCHED123: user PXYZ will cover for March 15-17
+```
+
+The assistant will:
+1. Calculate the appropriate date range
+2. Create the override
+3. Confirm the coverage period
+
+### View Historical On-Call
+
+Check who was on-call during a past incident:
+
+```
+Who was on-call for schedule SCHED123 on March 1st at 2am UTC?
+```
+
+Use the `since` and `until` parameters set to historical dates.
+
+## Schedule Best Practices
+
+<AccordionGroup>
+  <Accordion title="Use meaningful schedule names">
+    Name schedules clearly to indicate:
+    - Team or service (e.g., "Database Team Primary")
+    - Coverage type (e.g., "Business Hours", "After Hours")
+    - Level (e.g., "Level 1", "Escalation")
+  </Accordion>
+
+  <Accordion title="Configure appropriate time zones">
+    Set the schedule time zone to match:
+    - Where your team is located
+    - Business hours requirements
+    - Customer time zones for global services
+  </Accordion>
+
+  <Accordion title="Balance rotation length">
+    Consider rotation duration carefully:
+    - **Too short** (< 1 day): Disruptive, hard to plan
+    - **Too long** (> 1 week): Fatigue risk, impacts team morale
+    - **Recommended**: 1 week for most teams
+  </Accordion>
+
+  <Accordion title="Use schedule layers for complex coverage">
+    Combine multiple layers for:
+    - Different coverage during business vs. after hours
+    - Primary and secondary on-call
+    - Specialized expertise (database, security, etc.)
+  </Accordion>
+
+  <Accordion title="Document override reasons">
+    When creating overrides:
+    - Note the reason in team communication channels
+    - Confirm with the covering person
+    - Update any team calendars or documentation
+  </Accordion>
+
+  <Accordion title="Review schedules regularly">
+    Periodically check that:
+    - All team members are included appropriately
+    - Rotation patterns still match team needs
+    - Time zones are correct (especially after DST changes)
+    - No gaps exist in coverage
+  </Accordion>
+</AccordionGroup>
+
+## Troubleshooting
+
+### No One On-Call
+
+If a schedule shows no current on-call person:
+
+1. Check if the schedule has active layers
+2. Verify users are assigned to schedule layers
+3. Ensure the schedule start date is in the past
+4. Check for schedule restrictions that might exclude current time
+
+### Override Not Working
+
+If an override doesn't take effect:
+
+1. Verify the override time range includes the current time
+2. Check that times are in correct timezone format
+3. Ensure the override hasn't expired
+4. Confirm the user ID is correct
+
+### Wrong Person Notified
+
+If incidents go to the wrong person:
+
+1. Check which schedule is in the escalation policy
+2. Verify the correct schedule layer is active
+3. Review any active overrides
+4. Confirm the escalation policy is attached to the service
+
+## Related Resources
+
+- [Schedule Tools Reference](/tools/schedules/overview)
+- [Incident Management Guide](/guides/incident-management)
+- [Escalation Policies](/tools/escalation-policies/overview)
+- [User Management](/tools/users/overview)

@@ -1,0 +1,133 @@
+---
+title: "List Status Pages"
+description: "Retrieve a list of status pages with optional filtering"
+icon: "list"
+---
+
+## Overview
+
+The `list_status_pages` tool retrieves all status pages configured in your PagerDuty account. Status pages allow you to communicate service status and incidents to your customers and stakeholders.
+
+<Note>
+This is a **read-only** tool that does not modify any data in your PagerDuty account.
+</Note>
+
+## Parameters
+
+<ParamField path="status_page_type" type="string" optional>
+  Filter status pages by type. Options:
+  - `public` - Accessible to everyone
+  - `private` - Requires authentication
+  - `audience_specific` - Targeted to specific audiences
+  
+  Example: `"public"`
+</ParamField>
+
+<ParamField path="limit" type="integer" optional default="25">
+  Maximum number of results to return. Must be between 1 and 100.
+  
+  Example: `50`
+</ParamField>
+
+## Response
+
+Returns a list of status page objects.
+
+<ResponseField name="response" type="array">
+  Array of status page objects
+  
+  <Expandable title="StatusPage Object">
+    <ResponseField name="id" type="string">
+      The unique identifier of the status page
+    </ResponseField>
+    
+    <ResponseField name="type" type="string">
+      Always returns `"status_page"`
+    </ResponseField>
+    
+    <ResponseField name="name" type="string">
+      The name of the status page, presented as the brand title
+    </ResponseField>
+    
+    <ResponseField name="status_page_type" type="string">
+      The type of status page. Options:
+      - `public` - Accessible to everyone without authentication
+      - `private` - Requires authentication to access
+      - `audience_specific` - Available to targeted audiences
+    </ResponseField>
+    
+    <ResponseField name="url" type="string">
+      The URL where the status page can be accessed on the internet
+    </ResponseField>
+    
+    <ResponseField name="published_at" type="datetime">
+      The date and time when the status page was published and made publicly available
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Example Usage
+
+<CodeGroup>
+```bash Natural Language
+"Show me all status pages"
+```
+
+```bash Public Pages Only
+"List all public status pages"
+```
+
+```bash Private Pages
+"Get all private status pages"
+```
+</CodeGroup>
+
+## Use Cases
+
+- **Inventory status pages** - View all status pages in your account
+- **Find public pages** - Identify which status pages are publicly accessible
+- **Audit page types** - Review the visibility settings of your status pages
+- **Discover URLs** - Get the URLs for your status pages
+- **Verify publication** - Check which status pages have been published
+
+## Response Example
+
+```json
+{
+  "response": [
+    {
+      "id": "PSTATUS1",
+      "type": "status_page",
+      "name": "ACME API Status",
+      "status_page_type": "public",
+      "url": "https://status.acme.com",
+      "published_at": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": "PSTATUS2",
+      "type": "status_page",
+      "name": "Internal Services Status",
+      "status_page_type": "private",
+      "url": "https://internal-status.acme.com",
+      "published_at": "2024-01-15T10:00:00Z"
+    }
+  ]
+}
+```
+
+## Status Page Types Explained
+
+### Public
+Anyone can view the status page without authentication. Ideal for external customer communication.
+
+### Private
+Requires authentication to access. Best for internal team communication or sensitive information.
+
+### Audience Specific
+Targeted to specific audiences or user groups. Useful for different customer tiers or partners.
+
+## Related Tools
+
+- [Get Status Page Post](/tools/status-pages/get-post) - Retrieve details of a specific status page post
+- [Create Status Page Post](/tools/status-pages/create-post) - Create a new incident or maintenance post
+- [Create Status Page Post Update](/tools/status-pages/create-update) - Add an update to an existing post

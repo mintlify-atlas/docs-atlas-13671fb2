@@ -1,0 +1,124 @@
+---
+title: "create_team"
+description: "Create a new team"
+---
+
+## Overview
+
+Creates a new team in your PagerDuty account with a name, optional description, and default role for new members.
+
+<Warning>
+This is a **write tool** that creates new resources in your PagerDuty account. It requires the `--enable-write-tools` flag to be enabled.
+</Warning>
+
+## Parameters
+
+<ParamField body="name" type="string" required>
+  The name of the team. Should be descriptive and unique.
+</ParamField>
+
+<ParamField body="description" type="string">
+  Optional description explaining the team's purpose or responsibilities.
+</ParamField>
+
+<ParamField body="default_role" type="string" default="manager">
+  The default role assigned to new users added to the team. Options:
+  - `manager` - Full management permissions for the team
+  - `none` - No default role (must be specified when adding members)
+</ParamField>
+
+## Response
+
+Returns the created team object including the assigned team ID.
+
+## Example Usage
+
+### Create a basic team
+```
+Create a team called "Backend Services"
+```
+
+### Create with description
+```
+Create a team named "Platform Engineering" with description "Responsible for infrastructure and platform services"
+```
+
+### Create with specific default role
+```
+Create a team called "Observers" with default role "none"
+```
+
+## Understanding Team Roles
+
+### Default Role
+
+The `default_role` parameter determines what permissions new members get when added to the team:
+
+- **manager** (default) - Team managers can:
+  - View and modify team settings
+  - Add or remove team members
+  - Manage team-owned services and schedules
+  - Assign services to the team
+
+- **none** - No automatic role assignment. When adding members, you must explicitly specify their role (observer, responder, or manager).
+
+<Note>
+The `default_role` only applies when adding members to the team. It does not affect existing members or the initial creator of the team.
+</Note>
+
+## Team Member Roles
+
+While `default_role` can only be "manager" or "none", individual team members can have these roles:
+- **observer** - Read-only access to team resources
+- **responder** - Can respond to incidents for team services
+- **manager** - Full team management permissions
+
+See [manage_members](/tools/teams/manage-members) for details on adding members with specific roles.
+
+## Common Use Cases
+
+- **New team setup** - Create teams for new departments or projects
+- **Organizational restructuring** - Set up teams when reorganizing
+- **Service ownership** - Create teams to own specific services
+- **Access control** - Group users by responsibility area
+- **On-call management** - Create teams for on-call rotations
+
+## Post-Creation Steps
+
+After creating a team, you typically want to:
+
+1. **Add members** - Use [add_team_member](/tools/teams/manage-members) to add users
+2. **Assign services** - Associate services with the team
+3. **Create schedules** - Set up on-call schedules for the team
+4. **Configure escalation** - Create escalation policies for team services
+
+## Important Notes
+
+<Tip>
+Team names should be clear and descriptive. They appear throughout PagerDuty in service assignments, schedules, and escalation policies.
+</Tip>
+
+<Warning>
+You cannot create duplicate team names. If a team with the same name exists, the creation will fail.
+</Warning>
+
+## Related Tools
+
+<CardGroup cols={2}>
+  <Card title="list_teams" icon="list" href="/tools/teams/list-teams">
+    View all teams
+  </Card>
+  <Card title="get_team" icon="users" href="/tools/teams/get-team">
+    Get team details
+  </Card>
+  <Card title="add_team_member" icon="user-plus" href="/tools/teams/manage-members">
+    Add members to the team
+  </Card>
+  <Card title="update_team" icon="pen" href="/tools/teams/update-team">
+    Modify team settings
+  </Card>
+</CardGroup>
+
+## See Also
+
+- [Write Mode Configuration](/configuration/write-mode) - How to enable write tools

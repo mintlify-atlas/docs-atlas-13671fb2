@@ -1,0 +1,313 @@
+---
+title: "Write Mode"
+description: "Understand and configure write operations for the PagerDuty MCP Server"
+---
+
+The PagerDuty MCP Server operates in two modes: **read-only** (default) and **write mode**. This guide explains the differences and how to safely enable write operations.
+
+## Read-Only vs Write Mode
+
+### Read-Only Mode (Default)
+
+By default, the MCP server starts in read-only mode, which only exposes tools that retrieve information from your PagerDuty account. This is the safest way to explore and interact with your PagerDuty data.
+
+**Read-only operations include:**
+- Listing incidents, services, schedules, and teams
+- Getting details about specific resources
+- Viewing on-call schedules and rotations
+- Checking event orchestration configurations
+- Reading change events and log entries
+- Viewing alert grouping settings and status pages
+
+<Check>
+  Read-only mode is safe to use without concern. No changes can be made to your PagerDuty account.
+</Check>
+
+### Write Mode
+
+Write mode enables tools that can create, update, or delete resources in your PagerDuty account. This mode must be explicitly enabled using the `--enable-write-tools` flag.
+
+**Write operations include:**
+- Creating and managing incidents
+- Adding notes and responders to incidents
+- Creating and updating services
+- Creating schedule overrides
+- Modifying event orchestration rules
+- Managing team membership
+- Starting incident workflows
+- Creating and updating status page posts
+
+<Warning>
+  Write mode can modify your live PagerDuty environment. Always confirm operations before executing them.
+</Warning>
+
+## Enabling Write Mode
+
+To enable write operations, add the `--enable-write-tools` flag when starting the MCP server.
+
+### VS Code
+
+```json settings.json
+{
+  "mcp": {
+    "servers": {
+      "pagerduty-mcp": {
+        "type": "stdio",
+        "command": "uvx",
+        "args": [
+          "pagerduty-mcp",
+          "--enable-write-tools"
+        ],
+        "env": {
+          "PAGERDUTY_USER_API_KEY": "${input:pagerduty-api-key}"
+        }
+      }
+    }
+  }
+}
+```
+
+### Cursor
+
+```json settings.json
+{
+  "mcpServers": {
+    "pagerduty-mcp": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "pagerduty-mcp",
+        "--enable-write-tools"
+      ],
+      "env": {
+        "PAGERDUTY_USER_API_KEY": "${input:pagerduty-api-key}"
+      }
+    }
+  }
+}
+```
+
+### Claude Desktop
+
+```json claude_desktop_config.json
+{
+  "mcpServers": {
+    "pagerduty-mcp": {
+      "command": "uvx",
+      "args": [
+        "pagerduty-mcp",
+        "--enable-write-tools"
+      ],
+      "env": {
+        "PAGERDUTY_USER_API_KEY": "your-pagerduty-api-key-here"
+      }
+    }
+  }
+}
+```
+
+### Docker
+
+```bash
+docker run -i --rm \
+  -e PAGERDUTY_USER_API_KEY="your-api-key-here" \
+  pagerduty-mcp:latest --enable-write-tools
+```
+
+### Local Development
+
+```json settings.json
+{
+  "mcp": {
+    "servers": {
+      "pagerduty-mcp": {
+        "type": "stdio",
+        "command": "uv",
+        "args": [
+          "run",
+          "--directory",
+          "/path/to/pagerduty-mcp",
+          "python",
+          "-m",
+          "pagerduty_mcp",
+          "--enable-write-tools"
+        ],
+        "env": {
+          "PAGERDUTY_USER_API_KEY": "${input:pagerduty-api-key}"
+        }
+      }
+    }
+  }
+}
+```
+
+## Understanding Tool Annotations
+
+All MCP tools are annotated with safety hints to help clients and users understand the potential impact of each operation:
+
+### Read-Only Tools
+
+Read-only tools are marked with these annotations:
+
+```python
+ToolAnnotations(
+    readOnlyHint=True,
+    destructiveHint=False,
+    idempotentHint=True
+)
+```
+
+- **readOnlyHint=True**: This tool only reads data
+- **destructiveHint=False**: This tool cannot modify or delete data
+- **idempotentHint=True**: Calling this tool multiple times has the same effect
+
+### Write Tools
+
+Write tools are marked with these annotations:
+
+```python
+ToolAnnotations(
+    readOnlyHint=False,
+    destructiveHint=True,
+    idempotentHint=False
+)
+```
+
+- **readOnlyHint=False**: This tool can modify data
+- **destructiveHint=True**: This tool can make changes to your PagerDuty account
+- **idempotentHint=False**: Multiple calls may have different effects
+
+<Info>
+  MCP clients may use these annotations to display warnings or require additional confirmation before executing write operations.
+</Info>
+
+## What Operations Require Write Mode
+
+Here's a categorized list of operations that require write mode:
+
+<AccordionGroup>
+  <Accordion title="Incident Operations" icon="fire">
+    - `create_incident` - Create a new incident
+    - `manage_incidents` - Update incident status, urgency, or assignment
+    - `add_note_to_incident` - Add notes to an incident
+    - `add_responders` - Add responders to an incident
+  </Accordion>
+
+  <Accordion title="Service Operations" icon="server">
+    - `create_service` - Create a new service
+    - `update_service` - Update an existing service
+  </Accordion>
+
+  <Accordion title="Schedule Operations" icon="calendar">
+    - `create_schedule` - Create a new on-call schedule
+    - `update_schedule` - Update an existing schedule
+    - `create_schedule_override` - Create a schedule override
+  </Accordion>
+
+  <Accordion title="Event Orchestration Operations" icon="diagram-project">
+    - `update_event_orchestration_router` - Update router configuration
+    - `append_event_orchestration_router_rule` - Add a new routing rule
+  </Accordion>
+
+  <Accordion title="Team Operations" icon="users">
+    - `create_team` - Create a new team
+    - `update_team` - Update an existing team
+    - `delete_team` - Delete a team
+    - `add_team_member` - Add a user to a team
+    - `remove_team_member` - Remove a user from a team
+  </Accordion>
+
+  <Accordion title="Incident Workflow Operations" icon="workflow">
+    - `start_incident_workflow` - Start a workflow for an incident
+  </Accordion>
+
+  <Accordion title="Alert Grouping Operations" icon="layer-group">
+    - `create_alert_grouping_setting` - Create a new alert grouping setting
+    - `update_alert_grouping_setting` - Update an alert grouping setting
+    - `delete_alert_grouping_setting` - Delete an alert grouping setting
+  </Accordion>
+
+  <Accordion title="Status Page Operations" icon="signal">
+    - `create_status_page_post` - Create a new status page post
+    - `create_status_page_post_update` - Add an update to a status page post
+  </Accordion>
+</AccordionGroup>
+
+## Safety Considerations
+
+When using write mode, keep these safety considerations in mind:
+
+<CardGroup cols={2}>
+  <Card title="Confirm Before Executing" icon="check-circle">
+    Always review the AI assistant's proposed actions before confirming write operations. The assistant should explain what changes will be made.
+  </Card>
+
+  <Card title="Test in Non-Production" icon="flask">
+    If possible, test write operations in a non-production PagerDuty account first to understand their behavior.
+  </Card>
+
+  <Card title="Monitor Changes" icon="eye">
+    Keep an eye on your PagerDuty account's audit logs to track changes made through the MCP server.
+  </Card>
+
+  <Card title="Use Appropriate Permissions" icon="shield">
+    Ensure the API token user has appropriate permissions. Don't use admin tokens unless necessary.
+  </Card>
+</CardGroup>
+
+### Best Practices
+
+<Steps>
+  <Step title="Start with read-only mode">
+    Begin by using the server in read-only mode to familiarize yourself with the available tools and data.
+  </Step>
+
+  <Step title="Enable write mode selectively">
+    Only enable write mode when you need to perform modifications. Consider having separate configurations for read-only and write access.
+  </Step>
+
+  <Step title="Review AI proposals carefully">
+    Before confirming any write operation, ensure you understand what the AI assistant is proposing to change.
+  </Step>
+
+  <Step title="Have a rollback plan">
+    Know how to revert changes if something goes wrong. Keep track of previous configurations.
+  </Step>
+</Steps>
+
+## MCP Server Instructions
+
+When write tools are enabled, the MCP server provides these instructions to AI assistants:
+
+<Note>
+  "READ operations are safe to use, but be cautious with WRITE operations as they can modify the live environment. Always confirm with the user before using any tool marked as destructive."
+</Note>
+
+Responsible AI assistants will follow these instructions and ask for confirmation before executing write operations.
+
+## Checking Current Mode
+
+To verify which mode your MCP server is running in:
+
+1. Check the tool list in your MCP client
+2. If you see tools like `create_incident` or `update_service`, write mode is enabled
+3. If you only see tools like `list_incidents` or `get_service`, the server is in read-only mode
+
+You can also check your client configuration to see if the `--enable-write-tools` flag is present.
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="API Authentication" icon="key" href="/configuration/api-authentication">
+    Set up your PagerDuty API token
+  </Card>
+  <Card title="Tools Reference" icon="wrench" href="/tools/overview">
+    Browse all available MCP tools
+  </Card>
+  <Card title="Security Best Practices" icon="shield" href="/guides/security-best-practices">
+    Learn security recommendations
+  </Card>
+  <Card title="Incident Management" icon="fire" href="/guides/incident-management">
+    See write operations in action
+  </Card>
+</CardGroup>

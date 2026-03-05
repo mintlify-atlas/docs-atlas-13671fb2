@@ -1,0 +1,173 @@
+---
+title: VS Code Integration
+description: Configure the PagerDuty MCP Server in Visual Studio Code
+---
+
+This guide walks you through integrating the PagerDuty MCP Server with Visual Studio Code.
+
+## Prerequisites
+
+Ensure you have the MCP extension installed in VS Code. You can find it in the Extensions marketplace.
+
+## Setup
+
+<Steps>
+  <Step title="Open VS Code Settings">
+    Navigate to File > Preferences > Settings, or use the keyboard shortcut:
+    - **Mac:** `Cmd+,`
+    - **Windows/Linux:** `Ctrl+,`
+  </Step>
+
+  <Step title="Enable MCP">
+    Search for "mcp" in the settings search bar and ensure "Mcp: Enabled" is checked under Features > Chat.
+  </Step>
+
+  <Step title="Open MCP Server Configuration">
+    Click "Edit in settings.json" under "Mcp > Discovery: Servers" to open the configuration file.
+  </Step>
+
+  <Step title="Add Server Configuration">
+    Add the following configuration to your `settings.json`:
+
+    ```json
+    {
+        "mcp": {
+            "inputs": [
+                {
+                    "type": "promptString",
+                    "id": "pagerduty-api-key",
+                    "description": "PagerDuty API Key",
+                    "password": true
+                }
+            ],
+            "servers": {
+                "pagerduty-mcp": { 
+                    "type": "stdio",
+                    "command": "uvx",
+                    "args": [
+                        "pagerduty-mcp",
+                        "--enable-write-tools"
+                        // This flag enables write operations on the MCP Server enabling you to creating incidents, schedule overrides and much more
+                    ],
+                    "env": {
+                        "PAGERDUTY_USER_API_KEY": "${input:pagerduty-api-key}",
+                        "PAGERDUTY_API_HOST": "https://api.pagerduty.com"
+                        // If your PagerDuty account is located in EU update your API host to https://api.eu.pagerduty.com
+                    }
+                }
+            }
+        }
+    }
+    ```
+
+    The `--enable-write-tools` flag enables write operations, allowing you to create incidents, schedule overrides, and more.
+  </Step>
+
+  <Step title="Configure API Key">
+    When you first use the MCP server, VS Code will securely prompt you to enter your PagerDuty API key. The input is configured with `"password": true` to ensure the key is masked during entry.
+  </Step>
+</Steps>
+
+## Using Agent Mode
+
+Once configured, you can interact with PagerDuty through VS Code's Chat view:
+
+<Steps>
+  <Step title="Open VS Code Chat">
+    Open the Chat view by navigating to `View` > `Chat`.
+  </Step>
+
+  <Step title="Enable Agent Mode">
+    Make sure `Agent` mode is selected in the Chat view. You can enable or disable specific tools by clicking the 🛠️ icon.
+  </Step>
+
+  <Step title="Start a Conversation">
+    Enter commands to interact with your PagerDuty account:
+    - "Show me the latest incident"
+    - "List my event orchestrations"
+    - "Create a high-priority incident"
+  </Step>
+
+  <Step title="Manage MCP Servers">
+    You can start, stop, and manage your MCP servers using the command palette (`Cmd+Shift+P`/`Ctrl+Shift+P`) and searching for `MCP: List Servers`. Ensure the server is running before sending commands.
+  </Step>
+</Steps>
+
+## Configuration Details
+
+### Configuration File Location
+
+The VS Code MCP configuration is stored in your `settings.json` file, typically located at:
+- **Mac/Linux:** `~/.config/Code/User/settings.json`
+- **Windows:** `%APPDATA%\Code\User\settings.json`
+
+### Environment Variables
+
+- **PAGERDUTY_USER_API_KEY**: Your PagerDuty User API Token. VS Code will securely prompt for this value.
+- **PAGERDUTY_API_HOST**: The PagerDuty API endpoint. Use `https://api.pagerduty.com` for US accounts or `https://api.eu.pagerduty.com` for EU accounts.
+
+## Testing the Integration
+
+To verify the MCP server is working correctly:
+
+1. Open the VS Code Chat view (`View` > `Chat`)
+2. Ensure Agent mode is selected
+3. Try a simple query: "Show me my latest PagerDuty incidents"
+4. Verify that the server responds with your incident data
+
+If you don't see a response, check the MCP server status in the command palette (`MCP: List Servers`).
+
+## Troubleshooting
+
+### MCP Not Enabled
+
+If you don't see MCP options:
+
+1. Ensure the MCP extension is installed
+2. Search for "mcp" in VS Code settings
+3. Verify "Mcp: Enabled" is checked under Features > Chat
+4. Restart VS Code after enabling
+
+### Server Not Starting
+
+If the MCP server doesn't start:
+
+1. Open the command palette (`Cmd+Shift+P`/`Ctrl+Shift+P`)
+2. Search for `MCP: List Servers` to check server status
+3. Verify that `uvx` is installed and available in your PATH
+4. Check the Output panel for error messages (View > Output > MCP)
+5. Try restarting the server using `MCP: Restart Server`
+
+### API Key Issues
+
+If you're having trouble with API key authentication:
+
+1. Ensure the `inputs` configuration is correct in your `settings.json`
+2. Verify your PagerDuty API key has the necessary permissions
+3. Re-enter your API key by restarting the server
+4. Check that the `${input:pagerduty-api-key}` variable matches the input `id`
+
+### Connection Issues for EU Accounts
+
+If you're in the EU region and experiencing connection issues:
+
+1. Update `PAGERDUTY_API_HOST` to `https://api.eu.pagerduty.com`
+2. Save the configuration file
+3. Restart the MCP server using the command palette
+
+### Write Operations Not Working
+
+If you can read data but not create or modify resources:
+
+1. Ensure the `--enable-write-tools` flag is included in the `args` array
+2. Verify your API key has write permissions in PagerDuty
+3. Restart the MCP server after making configuration changes
+
+### Agent Mode Not Available
+
+If Agent mode is not available in the Chat view:
+
+1. Ensure you have the latest version of VS Code
+2. Verify MCP is enabled in settings
+3. Check that the MCP extension is up to date
+4. Try reloading the window (`Developer: Reload Window`)

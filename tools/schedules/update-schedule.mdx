@@ -1,0 +1,135 @@
+---
+title: "update_schedule"
+description: "Update an existing on-call schedule"
+---
+
+## Overview
+
+Updates an existing on-call schedule, including its name, time zone, description, and schedule layers. This tool can modify the rotation order, shift durations, and time restrictions.
+
+<Warning>
+This is a **write tool** that modifies resources in your PagerDuty account. It requires the `--enable-write-tools` flag to be enabled.
+</Warning>
+
+## Parameters
+
+<ParamField path="schedule_id" type="string" required>
+  The ID of the schedule to update.
+</ParamField>
+
+<ParamField body="name" type="string" required>
+  The updated name for the schedule.
+</ParamField>
+
+<ParamField body="time_zone" type="string" required>
+  The time zone for the schedule using IANA format (e.g., "America/New_York").
+</ParamField>
+
+<ParamField body="description" type="string">
+  Optional updated description for the schedule.
+</ParamField>
+
+<ParamField body="schedule_layers" type="array" required>
+  Updated array of schedule layers. Each layer requires the same fields as [create_schedule](/tools/schedules/create-schedule):
+  - `name` - Layer name
+  - `start` - Layer start time (ISO 8601)
+  - `rotation_virtual_start` - Virtual start for rotation calculation
+  - `rotation_turn_length_seconds` - Shift duration in seconds
+  - `users` - Ordered list of users
+  - `end` (optional) - Layer end time
+  - `restrictions` (optional) - Time restrictions
+</ParamField>
+
+## Response
+
+Returns the updated schedule object with all modified fields.
+
+## Example Usage
+
+### Update schedule name and description
+```
+Rename schedule P4B2Z3G to "Production On-Call" and update its description
+```
+
+### Change rotation order
+```
+For schedule P4B2Z3G, move Alice to be first in the rotation
+```
+
+### Modify shift duration
+```
+Change the Production schedule from weekly to daily rotations
+```
+
+### Add time restrictions
+```
+Update the Support schedule to only be active during business hours (9am-5pm weekdays)
+```
+
+### Add or remove users
+```
+Add user U4J8K2L to the Backend schedule rotation after Bob
+```
+
+## Important Considerations
+
+<Warning>
+**Updating a schedule replaces the entire configuration.** You must provide complete schedule layer definitions, not just the fields you want to change.
+</Warning>
+
+### Best Practice Workflow
+
+1. **Get current configuration** - Use `get_schedule` to retrieve the existing schedule details
+2. **Modify as needed** - Make your changes to the schedule data
+3. **Update the schedule** - Call `update_schedule` with the modified configuration
+4. **Verify changes** - Use `get_schedule` again to confirm the updates
+
+<Note>
+Changes to schedules take effect immediately and will affect current and future on-call assignments.
+</Note>
+
+## Common Use Cases
+
+- **Adjust rotation order** - Change which users are on-call and in what sequence
+- **Modify shift duration** - Change from weekly to daily rotations or vice versa
+- **Add/remove team members** - Update the user list in the rotation
+- **Change time zone** - Adjust for team relocations or daylight saving preferences
+- **Add restrictions** - Limit coverage to business hours or specific days
+- **Update schedule name** - Rename schedules for clarity
+- **Extend or end layers** - Modify start/end dates for schedule layers
+
+## Understanding Schedule Updates
+
+### Replacing vs Modifying Layers
+
+When you update a schedule, you're replacing the layer configuration. To add a new layer, include both existing and new layers in the update.
+
+### User Order Matters
+
+The order of users in the `users` array determines their position in the rotation. The first user takes the first shift, the second user takes the second shift, and so on.
+
+### Virtual Start and Rotation Alignment
+
+Changing `rotation_virtual_start` affects who is on-call when. If you need to adjust which user is currently on-call, you may need to modify the virtual start date.
+
+## Related Tools
+
+<CardGroup cols={2}>
+  <Card title="get_schedule" icon="calendar" href="/tools/schedules/get-schedule">
+    Get current schedule configuration
+  </Card>
+  <Card title="create_override" icon="user-clock" href="/tools/schedules/create-override">
+    Create temporary overrides without modifying the schedule
+  </Card>
+  <Card title="list_schedules" icon="list" href="/tools/schedules/list-schedules">
+    View all schedules
+  </Card>
+  <Card title="list_oncalls" icon="bell" href="/tools/schedules/list-oncalls">
+    Check current on-call assignments
+  </Card>
+</CardGroup>
+
+## See Also
+
+- [Write Mode Configuration](/configuration/write-mode) - How to enable write tools
+- [On-Call Management Guide](/guides/on-call-management) - Best practices for schedule management

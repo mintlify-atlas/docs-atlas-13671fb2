@@ -1,0 +1,236 @@
+---
+title: "Create Status Page Post Update"
+description: "Add a new update to an existing status page post"
+icon: "message-plus"
+---
+
+## Overview
+
+The `create_status_page_post_update` tool adds a new update to an existing status page post. Use this to provide progress updates during an incident or maintenance window.
+
+<Warning>
+This is a **write** tool that creates a public-facing status update. You must enable write tools with the `--enable-write-tools` flag to use this tool.
+</Warning>
+
+## Parameters
+
+<ParamField path="status_page_id" type="string" required>
+  The unique identifier of the status page.
+  
+  Example: `"PSTATUS1"`
+</ParamField>
+
+<ParamField path="post_id" type="string" required>
+  The unique identifier of the status page post to update.
+  
+  Example: `"POST123"`
+</ParamField>
+
+<ParamField path="message" type="string" required>
+  The message text for the update. This is what status page viewers will see.
+  
+  Example: `"The issue has been identified and a fix is being deployed"`
+</ParamField>
+
+<ParamField path="status" type="object" required>
+  Status reference indicating the current state of the incident or maintenance.
+  
+  Common status IDs for incidents:
+  - `investigating` - Initial response, investigating the issue
+  - `identified` - Root cause has been identified
+  - `monitoring` - Fix deployed, monitoring for stability
+  - `resolved` - Issue completely resolved
+  
+  Common status IDs for maintenance:
+  - `scheduled` - Maintenance is scheduled
+  - `in_progress` - Maintenance is currently underway
+  - `completed` - Maintenance has been completed
+  
+  Example: `{"id": "identified", "type": "status_page_status"}`
+</ParamField>
+
+<ParamField path="severity" type="object" required>
+  Severity reference indicating the impact level.
+  
+  Common severity IDs:
+  - `none` - No impact
+  - `minor` - Minor impact
+  - `major` - Major impact
+  - `critical` - Critical impact
+  
+  Example: `{"id": "major", "type": "status_page_severity"}`
+</ParamField>
+
+<ParamField path="post" type="object" optional>
+  Post reference (required by API).
+  
+  Example: `{"id": "POST123", "type": "status_page_post"}`
+</ParamField>
+
+<ParamField path="impacted_services" type="array" optional default="[]">
+  List of impacted services with their impact levels. Can be an empty array if no services are impacted or if impact hasn't changed.
+  
+  Example:
+  ```json
+  [
+    {
+      "service": {"id": "SPSVC1", "type": "status_page_service"},
+      "impact": {"id": "partial_outage", "type": "status_page_impact"}
+    }
+  ]
+  ```
+</ParamField>
+
+<ParamField path="notify_subscribers" type="boolean" optional default="false">
+  Whether to notify subscribers of this update. Set to `true` for important updates.
+  
+  Example: `true`
+</ParamField>
+
+<ParamField path="update_frequency_ms" type="integer" optional>
+  The frequency of the next update in milliseconds. Use `null` for no scheduled frequency.
+  
+  Example: `1800000` (30 minutes)
+</ParamField>
+
+<ParamField path="reported_at" type="datetime" optional>
+  The date and time when the update was reported. Defaults to now if not specified.
+  
+  Example: `"2024-01-15T14:30:00Z"`
+</ParamField>
+
+## Response
+
+Returns the created post update object.
+
+<ResponseField name="id" type="string">
+  The unique identifier of the created post update
+</ResponseField>
+
+<ResponseField name="type" type="string">
+  Always returns `"status_page_post_update"`
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  The message text of the update
+</ResponseField>
+
+<ResponseField name="status" type="object">
+  The status reference
+</ResponseField>
+
+<ResponseField name="severity" type="object">
+  The severity reference
+</ResponseField>
+
+<ResponseField name="post" type="object">
+  Reference to the parent post
+</ResponseField>
+
+<ResponseField name="impacted_services" type="array">
+  List of impacted services
+</ResponseField>
+
+<ResponseField name="notify_subscribers" type="boolean">
+  Whether subscribers were notified
+</ResponseField>
+
+<ResponseField name="reported_at" type="datetime">
+  When the update was reported
+</ResponseField>
+
+## Example Usage
+
+<CodeGroup>
+```bash Natural Language
+"Update status page post POST123 - issue has been identified"
+```
+
+```bash Progress Update
+"Add an update that the fix is being deployed for post POST123"
+```
+
+```bash Resolution
+"Mark status page post POST123 as resolved"
+```
+</CodeGroup>
+
+## Use Cases
+
+- **Progress updates** - Keep customers informed during incident resolution
+- **Status changes** - Communicate when moving from investigating to identified to resolved
+- **Transparency** - Provide regular updates even if there's no significant progress
+- **Resolution confirmation** - Confirm when issues are fully resolved
+- **Maintenance progress** - Update on maintenance completion status
+
+## Complete Example
+
+```json
+{
+  "status_page_id": "PSTATUS1",
+  "post_id": "POST123",
+  "message": "The issue has been identified. Our team is deploying a fix and we expect resolution within 30 minutes.",
+  "status": {
+    "id": "identified",
+    "type": "status_page_status"
+  },
+  "severity": {
+    "id": "major",
+    "type": "status_page_severity"
+  },
+  "post": {
+    "id": "POST123",
+    "type": "status_page_post"
+  },
+  "impacted_services": [
+    {
+      "service": {"id": "SPSVC1", "type": "status_page_service"},
+      "impact": {"id": "degraded_performance", "type": "status_page_impact"}
+    }
+  ],
+  "notify_subscribers": true,
+  "update_frequency_ms": 1800000,
+  "reported_at": "2024-01-15T14:30:00Z"
+}
+```
+
+## Update Workflow Example
+
+```bash
+# 1. Initial update - investigating
+"Create update for post POST123: We are investigating increased API latency"
+
+# 2. Progress update - identified
+"Update post POST123: Issue identified, deploying fix"
+
+# 3. Monitoring update
+"Update post POST123: Fix deployed, monitoring for stability"
+
+# 4. Resolution
+"Update post POST123 as resolved: All systems operating normally"
+```
+
+## Important Notes
+
+<Warning>
+- Updates are immediately visible to all status page viewers
+- Setting `notify_subscribers: true` sends notifications to all subscribers
+- Status and severity changes should reflect the actual state of the incident
+- Provide meaningful updates - avoid generic messages
+- Consider your update frequency based on incident severity
+</Warning>
+
+<Note>
+**Best Practices:**
+- Update regularly during active incidents (every 30-60 minutes)
+- Be specific about what actions are being taken
+- Use appropriate status transitions (investigating → identified → monitoring → resolved)
+- Notify subscribers for important status changes
+- Include estimated time to resolution when known
+</Note>
+
+## Related Tools
+
+- [Get Status Page Post](/tools/status-pages/get-post) - View post and all updates
+- [Create Status Page Post](/tools/status-pages/create-post) - Create the initial post
+- [List Status Pages](/tools/status-pages/list-status-pages) - View available status pages

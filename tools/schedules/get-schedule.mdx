@@ -1,0 +1,133 @@
+---
+title: "get_schedule"
+description: "Get details for a specific schedule"
+---
+
+## Overview
+
+Retrieves complete details for a specific on-call schedule by its ID, including schedule layers, rotation information, and associated users and teams.
+
+<Info>
+This is a **read-only** tool that does not modify any data in your PagerDuty account.
+</Info>
+
+## Parameters
+
+<ParamField query="schedule_id" type="string" required>
+  The ID of the schedule to retrieve. This is the unique identifier for the schedule in PagerDuty.
+</ParamField>
+
+## Response
+
+Returns a detailed schedule object with the following fields:
+
+<ResponseField name="id" type="string">
+  The unique identifier for the schedule
+</ResponseField>
+
+<ResponseField name="name" type="string">
+  The name of the schedule
+</ResponseField>
+
+<ResponseField name="summary" type="string">
+  A short description of the schedule
+</ResponseField>
+
+<ResponseField name="description" type="string">
+  The full description of the schedule
+</ResponseField>
+
+<ResponseField name="time_zone" type="string">
+  The time zone of the schedule (IANA format, e.g., "America/New_York")
+</ResponseField>
+
+<ResponseField name="html_url" type="string">
+  The URL to view the schedule in PagerDuty
+</ResponseField>
+
+<ResponseField name="created_at" type="datetime">
+  When the schedule was created
+</ResponseField>
+
+<ResponseField name="updated_at" type="datetime">
+  When the schedule was last updated
+</ResponseField>
+
+<ResponseField name="users" type="array">
+  List of users associated with this schedule. Each user includes:
+  - `id` - User ID
+  - `summary` - User name
+  - `html_url` - Link to user profile
+</ResponseField>
+
+<ResponseField name="teams" type="array">
+  List of teams associated with this schedule. Each team includes:
+  - `id` - Team ID
+  - `summary` - Team name
+  - `html_url` - Link to team page
+</ResponseField>
+
+<ResponseField name="schedule_layers" type="array">
+  The schedule layers that define the rotation. Each layer includes:
+  - `id` - Layer ID
+  - `name` - Layer name
+  - `start` - When the layer starts
+  - `end` - When the layer ends (null if ongoing)
+  - `rotation_virtual_start` - The effective start time
+  - `rotation_turn_length_seconds` - Duration of each shift
+  - `users` - Ordered list of users in the rotation
+  - `restrictions` - Time restrictions for the layer
+</ResponseField>
+
+## Example Usage
+
+### Get schedule by ID
+```
+Show me details for schedule P4B2Z3G
+```
+
+### View schedule configuration
+```
+What is the configuration for the "Production Ops" schedule?
+```
+
+### Check schedule rotation
+```
+How is the rotation set up for schedule P4B2Z3G?
+```
+
+## Understanding Schedule Layers
+
+Schedules in PagerDuty are built using layers, which define:
+
+- **Rotation order** - The sequence of users who take on-call shifts
+- **Shift duration** - How long each user is on-call (e.g., 1 week, 24 hours)
+- **Time restrictions** - Limits on when the layer is active (e.g., business hours only)
+- **Start and end dates** - When the layer begins and ends
+
+Multiple layers can be combined to create complex schedules with different coverage patterns.
+
+## Common Use Cases
+
+- **Review configuration** - Examine how a schedule is set up
+- **Verify rotation** - Check the order and timing of on-call shifts
+- **Troubleshooting** - Debug schedule issues by reviewing layer details
+- **Documentation** - Generate reports on schedule configurations
+- **Planning changes** - Review current settings before making updates
+
+## Related Tools
+
+<CardGroup cols={2}>
+  <Card title="list_schedules" icon="list" href="/tools/schedules/list-schedules">
+    List all schedules
+  </Card>
+  <Card title="list_oncalls" icon="bell" href="/tools/schedules/list-oncalls">
+    See who is currently on-call
+  </Card>
+  <Card title="update_schedule" icon="pen" href="/tools/schedules/update-schedule">
+    Modify the schedule (write mode)
+  </Card>
+  <Card title="create_override" icon="user-clock" href="/tools/schedules/create-override">
+    Create a schedule override (write mode)
+  </Card>
+</CardGroup>

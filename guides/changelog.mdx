@@ -1,0 +1,262 @@
+---
+title: Changelog
+description: Release history and version notes for the PagerDuty MCP Server
+---
+
+This page documents the release history of the PagerDuty MCP Server. For the complete list of releases with full details, see the [GitHub Releases page](https://github.com/pagerduty/pagerduty-mcp-server/releases).
+
+## Current Version
+
+### v0.15.0 (Latest)
+
+Current stable release with the latest features and improvements.
+
+**View on GitHub:**
+- [Release Notes](https://github.com/pagerduty/pagerduty-mcp-server/releases/tag/v0.15.0)
+- [Source Code](https://github.com/pagerduty/pagerduty-mcp-server/tree/v0.15.0)
+
+## Version History
+
+The PagerDuty MCP Server follows [Semantic Versioning](https://semver.org/):
+- **Major versions** (X.0.0): Breaking changes
+- **Minor versions** (0.X.0): New features, backwards compatible
+- **Patch versions** (0.0.X): Bug fixes, backwards compatible
+
+### Recent Releases
+
+<AccordionGroup>
+  <Accordion title="v0.15.0 - Latest Stable Release">
+    **Major Features:**
+    - Enhanced incident management tools
+    - Improved error handling and validation
+    - Updated dependencies for better security
+    - MCP Python SDK 1.8 support
+    
+    **Bug Fixes:**
+    - Fixed requester_id handling in add_responders tool
+    - Improved error messages for authentication failures
+    - Better handling of regional endpoints
+    
+    **Documentation:**
+    - Comprehensive tool documentation
+    - Updated installation guides
+    - Enhanced examples and use cases
+    
+    [View full release notes →](https://github.com/pagerduty/pagerduty-mcp-server/releases/tag/v0.15.0)
+  </Accordion>
+
+  <Accordion title="v0.14.x - Previous Stable Releases">
+    **Key improvements across v0.14.x:**
+    - Status Pages support
+    - Incident Workflows integration
+    - Enhanced schedule management
+    - Alert grouping settings
+    - Docker support improvements
+    
+    [View all v0.14.x releases →](https://github.com/pagerduty/pagerduty-mcp-server/releases?q=v0.14)
+  </Accordion>
+
+  <Accordion title="v0.13.x and Earlier">
+    **Historical releases:**
+    - Initial MCP server implementation
+    - Core PagerDuty API tools
+    - Basic incident management
+    - Schedule and on-call support
+    - Event orchestration tools
+    
+    [View all releases →](https://github.com/pagerduty/pagerduty-mcp-server/releases)
+  </Accordion>
+</AccordionGroup>
+
+## Upgrade Guide
+
+### Using uvx (Recommended)
+
+If you're using `uvx`, upgrades are automatic:
+
+```bash
+# uvx always uses the latest version
+uvx pagerduty-mcp
+
+# Force refresh to get the latest immediately
+uvx --refresh pagerduty-mcp
+```
+
+### Using pip
+
+If you installed via pip:
+
+```bash
+pip install --upgrade pagerduty-mcp
+```
+
+### Local Development
+
+For local development installations:
+
+```bash
+cd /path/to/pagerduty-mcp-server
+git pull origin main
+uv sync
+```
+
+### Restart Required
+
+After upgrading, restart your MCP client:
+- **VS Code/Cursor**: Reload the window or restart the application
+- **Claude Desktop**: Quit and relaunch the application
+
+## Breaking Changes
+
+We strive to maintain backwards compatibility. Breaking changes are documented here:
+
+<Note>
+Currently, there are no breaking changes between recent versions. The API remains stable across 0.13.x through 0.15.x.
+</Note>
+
+When breaking changes occur in future versions, they will be clearly documented with migration guides.
+
+## Feature Timeline
+
+### Incident Management
+- **v0.13.x**: Core incident tools (list, get, create, manage)
+- **v0.14.x**: Advanced incident analysis (outliers, related, past incidents)
+- **v0.15.x**: Enhanced incident workflows and responder management
+
+### Schedules and On-Call
+- **v0.13.x**: Basic schedule operations (list, get)
+- **v0.14.x**: Schedule overrides and rotation management
+- **v0.15.x**: Advanced schedule manipulation and validation
+
+### Event Orchestration
+- **v0.13.x**: View orchestrations and router configurations
+- **v0.14.x**: Update router rules and append routing rules
+- **v0.15.x**: Global and service orchestration support
+
+### Status Pages
+- **v0.14.x**: Status page posts and updates
+- **v0.15.x**: Enhanced status page management tools
+
+### Teams and Users
+- **v0.13.x**: List and view operations
+- **v0.14.x**: Team management and member operations
+- **v0.15.x**: Improved team workflows
+
+## Upcoming Features
+
+Planned features for future releases:
+
+<CardGroup cols={2}>
+  <Card title="Custom Fields" icon="input-text">
+    Support for PagerDuty custom fields on incidents and alerts
+  </Card>
+  
+  <Card title="Business Services" icon="sitemap">
+    Tools for managing business services and dependencies
+  </Card>
+  
+  <Card title="Analytics" icon="chart-line">
+    Incident analytics and reporting capabilities
+  </Card>
+  
+  <Card title="Webhooks" icon="webhook">
+    Webhook management and configuration tools
+  </Card>
+</CardGroup>
+
+<Note>
+Feature plans are subject to change based on community feedback and priorities. Request features on [GitHub Issues](https://github.com/pagerduty/pagerduty-mcp-server/issues).
+</Note>
+
+## Deprecations
+
+No features are currently deprecated. When deprecations occur, they will be:
+
+1. **Announced in release notes**: Clear notice of deprecation
+2. **Maintained for at least 3 months**: Time to update your usage
+3. **Documented with alternatives**: Migration path provided
+4. **Warned at runtime**: Deprecation warnings when used
+
+## Release Process
+
+The PagerDuty MCP Server follows this release workflow:
+
+<Steps>
+  <Step title="Development">
+    New features and fixes are merged to the `next` branch.
+  </Step>
+  
+  <Step title="Pre-release">
+    Pre-release versions (e.g., `0.16.0-beta.1`) are published from `next` for testing.
+  </Step>
+  
+  <Step title="Stable release">
+    After testing, changes are merged to `main` and released as stable versions.
+  </Step>
+  
+  <Step title="Announcement">
+    Release notes are published on GitHub with detailed changelogs.
+  </Step>
+</Steps>
+
+## Staying Updated
+
+### GitHub Releases
+
+Watch the repository for release notifications:
+
+1. Go to [github.com/pagerduty/pagerduty-mcp-server](https://github.com/pagerduty/pagerduty-mcp-server)
+2. Click **Watch** → **Custom** → **Releases**
+3. You'll receive notifications for new releases
+
+### Release Notes RSS
+
+Subscribe to the GitHub releases feed:
+```
+https://github.com/pagerduty/pagerduty-mcp-server/releases.atom
+```
+
+### Community Forum
+
+Major releases are announced in the [PagerDuty Community Forum](https://community.pagerduty.com/).
+
+## Version Support
+
+### Current Support Policy
+
+- **Latest stable version**: Fully supported with bug fixes and updates
+- **Previous minor version**: Security fixes only
+- **Older versions**: Not actively supported
+
+<Tip>
+We recommend always using the latest stable version to get the newest features and security updates.
+</Tip>
+
+### Python Version Support
+
+The MCP server currently requires **Python 3.12**. Future versions may support:
+- Python 3.13 (when stable)
+- Backwards compatibility with Python 3.11 (under consideration)
+
+### MCP SDK Compatibility
+
+The server tracks the official MCP Python SDK:
+- **Current**: MCP SDK 1.8.x
+- **Forward compatibility**: Updates to support new SDK features
+- **Backwards compatibility**: Maintained for at least one major SDK version
+
+## Contributing to Releases
+
+Want to contribute to a future release?
+
+1. **Check the roadmap**: See planned features in [GitHub Issues](https://github.com/pagerduty/pagerduty-mcp-server/issues)
+2. **Propose features**: Create feature requests with the template
+3. **Submit pull requests**: See the [Contributing Guide](/guides/contributing)
+4. **Join discussions**: Participate in feature planning
+
+## Related Resources
+
+- [GitHub Repository](https://github.com/pagerduty/pagerduty-mcp-server)
+- [GitHub Releases](https://github.com/pagerduty/pagerduty-mcp-server/releases)
+- [Contributing Guide](/guides/contributing)
+- [Installation Guide](/installation)

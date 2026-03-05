@@ -1,0 +1,136 @@
+---
+title: Docker Deployment
+description: Run the PagerDuty MCP Server in a Docker container for isolated and portable deployment
+---
+
+The PagerDuty MCP server can be run in a Docker container, providing an isolated and portable deployment option. The Docker image uses stdio transport for MCP communication.
+
+## Prerequisites
+
+- Docker installed
+- A PagerDuty User API Token (see [Prerequisites](/quickstart/prerequisites))
+
+## Building the Docker Image
+
+Build the Docker image using the following command:
+
+```bash
+docker build -t pagerduty-mcp:latest .
+```
+
+The Dockerfile uses a multi-stage build process:
+- **Stage 1 (Builder)**: Installs dependencies and the project using `uv`
+- **Stage 2 (Runtime)**: Creates a minimal production image with only the necessary runtime files
+
+The image runs as a non-root user (`mcp`) for security.
+
+## Running in Read-Only Mode
+
+By default, the Docker container runs in read-only mode, exposing only tools that read data:
+
+```bash
+docker run -i --rm \
+  -e PAGERDUTY_USER_API_KEY="your-api-key-here" \
+  pagerduty-mcp:latest
+```
+
+## Running with Write Tools Enabled
+
+To enable tools that can modify your PagerDuty account, use the `--enable-write-tools` flag:
+
+```bash
+docker run -i --rm \
+  -e PAGERDUTY_USER_API_KEY="your-api-key-here" \
+  pagerduty-mcp:latest --enable-write-tools
+```
+
+<Warning>
+Write tools can modify your PagerDuty data. Only enable them when necessary and ensure you understand what operations will be performed.
+</Warning>
+
+## EU Region Configuration
+
+If your PagerDuty account is located in the EU region, set the `PAGERDUTY_API_HOST` environment variable:
+
+```bash
+docker run -i --rm \
+  -e PAGERDUTY_USER_API_KEY="your-api-key-here" \
+  -e PAGERDUTY_API_HOST="https://api.eu.pagerduty.com" \
+  pagerduty-mcp:latest
+```
+
+## Using with MCP Clients via Docker
+
+To integrate the Docker container with MCP clients, use Docker as the command.
+
+### Claude Desktop Example
+
+Add the following configuration to your Claude Desktop settings:
+
+```json
+{
+  "mcpServers": {
+    "pagerduty-mcp": {
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "--rm",
+        "-e",
+        "PAGERDUTY_USER_API_KEY=your-api-key-here",
+        "pagerduty-mcp:latest"
+      ]
+    }
+  }
+}
+```
+
+<Note>
+Ensure you build the image first using `docker build -t pagerduty-mcp:latest .`
+</Note>
+
+## Environment Variables
+
+The Docker container supports the following environment variables:
+
+| Variable | Description | Default | Required |
+|----------|-------------|---------|----------|
+| `PAGERDUTY_USER_API_KEY` | Your PagerDuty User API Token | - | Yes |
+| `PAGERDUTY_API_HOST` | PagerDuty API host URL | `https://api.pagerduty.com` | No |
+
+### Environment Variable Details
+
+- **PAGERDUTY_USER_API_KEY**: Your personal API token from PagerDuty
+- **PAGERDUTY_API_HOST**: Use `https://api.eu.pagerduty.com` for EU accounts, otherwise use the default
+
+## Troubleshooting
+
+### Container Exits Immediately
+
+If the container exits immediately, ensure you're using the `-i` flag for interactive mode, as the MCP server uses stdio transport.
+
+### API Key Not Working
+
+Verify that:
+- Your API key is correctly set in the environment variable
+- The API key has not expired
+- You're using a User API Token (not a REST API key)
+
+### EU Region Connection Issues
+
+If you're getting authentication errors and your account is in the EU:
+- Set `PAGERDUTY_API_HOST="https://api.eu.pagerduty.com"`
+- Verify your account region in PagerDuty settings
+
+### Health Check Failures
+
+The Docker image includes a health check that verifies the server can start. If health checks fail:
+- Check container logs: `docker logs <container-id>`
+- Verify Python dependencies are correctly installed
+- Ensure the `pagerduty_mcp` module is importable
+
+### Permission Issues
+
+The container runs as a non-root user (`mcp` with UID 1000). If you encounter permission issues:
+- Ensure any mounted volumes have appropriate permissions
+- Check that the container can write to necessary directories

@@ -1,0 +1,182 @@
+---
+title: "list_oncalls"
+description: "List current and future on-call assignments"
+---
+
+## Overview
+
+Retrieves on-call assignments across schedules, showing who is on-call now or during a specific time period. Supports filtering by schedule, user, escalation policy, and time range.
+
+<Info>
+This is a **read-only** tool that does not modify any data in your PagerDuty account.
+</Info>
+
+## Parameters
+
+All parameters are optional and can be combined to filter results:
+
+<ParamField query="schedule_ids" type="array of strings">
+  Filter on-call assignments by schedule IDs. Returns only assignments from the specified schedules.
+</ParamField>
+
+<ParamField query="user_ids" type="array of strings">
+  Filter by user IDs. Returns only assignments for the specified users.
+</ParamField>
+
+<ParamField query="escalation_policy_ids" type="array of strings">
+  Filter by escalation policy IDs. Returns assignments associated with specific escalation policies.
+</ParamField>
+
+<ParamField query="since" type="datetime">
+  Start of the time range to query. Defaults to the current time. Use ISO 8601 format.
+</ParamField>
+
+<ParamField query="until" type="datetime">
+  End of the time range to query. Defaults to the current time. Use ISO 8601 format.
+</ParamField>
+
+<ParamField query="time_zone" type="string">
+  Time zone for rendering dates (IANA format, e.g., "America/New_York"). If not specified, uses the schedule's time zone.
+</ParamField>
+
+<ParamField query="earliest" type="boolean" default="true">
+  If true, returns only the earliest on-call for each combination of user and escalation policy. Set to false to see all on-call assignments including overlapping coverage.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="25">
+  Maximum number of on-call assignments to return. Must be between 1 and 100.
+</ParamField>
+
+## Response
+
+Returns a list of on-call assignments. Each assignment includes:
+
+<ResponseField name="user" type="object">
+  The user who is on-call:
+  - `id` - User ID
+  - `summary` - User name
+  - `html_url` - Link to user profile
+</ResponseField>
+
+<ResponseField name="schedule" type="object">
+  The schedule for this assignment:
+  - `id` - Schedule ID
+  - `summary` - Schedule name
+  - `html_url` - Link to schedule
+</ResponseField>
+
+<ResponseField name="escalation_policy" type="object">
+  The escalation policy associated with this on-call:
+  - `id` - Escalation policy ID
+  - `summary` - Policy name
+  - `html_url` - Link to policy
+</ResponseField>
+
+<ResponseField name="escalation_level" type="integer">
+  The level in the escalation policy (1 for first level, 2 for second level, etc.)
+</ResponseField>
+
+<ResponseField name="start" type="datetime">
+  When this on-call shift starts. Null for permanent on-call assignments.
+</ResponseField>
+
+<ResponseField name="end" type="datetime">
+  When this on-call shift ends. Null if the user remains on-call indefinitely.
+</ResponseField>
+
+## Example Usage
+
+### Check who is currently on-call
+```
+Who is on-call right now?
+```
+
+### Find on-call for specific schedule
+```
+Who is on-call for the Production schedule?
+```
+
+### Check future on-call assignments
+```
+Who will be on-call next week?
+```
+
+### View a user's upcoming on-call shifts
+```
+Show me Alice's on-call schedule for the next month
+```
+
+### Check all on-call during a time period
+```
+Who will be on-call during the holiday weekend (Dec 23-26)?
+```
+
+### View on-call for multiple schedules
+```
+Show me current on-call for both the Backend and Frontend schedules
+```
+
+## Understanding On-Call Assignments
+
+### Escalation Levels
+
+On-call assignments are tied to escalation policies with multiple levels:
+- **Level 1** - The first responder for incidents
+- **Level 2** - The second responder if level 1 doesn't respond
+- **Level 3+** - Additional escalation levels
+
+This tool shows which user is on-call at each escalation level.
+
+### Time Ranges
+
+By default, the tool returns current on-call assignments. Use `since` and `until` to query:
+- **Past assignments** - See historical on-call data
+- **Future assignments** - Plan ahead and verify rotations
+- **Specific time windows** - Check coverage during maintenance windows or holidays
+
+### Overlapping Coverage
+
+If `earliest=true` (default), you see one assignment per user/policy combination. Set `earliest=false` to see all assignments, including:
+- Multiple layers in the same schedule
+- Overlapping overrides
+- Backup coverage
+
+## Common Use Cases
+
+- **Incident response** - Quickly identify who to contact for an incident
+- **Coverage verification** - Ensure all schedules have on-call coverage
+- **Planning** - Review upcoming on-call assignments for time off requests
+- **Audit** - Track historical on-call data for load balancing
+- **Status checks** - Display current on-call status in dashboards or reports
+- **Team coordination** - Identify which team members are on-call when scheduling meetings
+
+## Important Notes
+
+<Note>
+This tool respects schedule overrides. If a schedule has an active override, the override user will be shown as on-call instead of the regularly scheduled user.
+</Note>
+
+<Tip>
+To see who is on-call across your entire account, call this tool without any filters. Use filters to narrow down to specific teams or schedules.
+</Tip>
+
+## Related Tools
+
+<CardGroup cols={2}>
+  <Card title="get_schedule" icon="calendar" href="/tools/schedules/get-schedule">
+    View schedule configuration
+  </Card>
+  <Card title="list_schedules" icon="list" href="/tools/schedules/list-schedules">
+    List all schedules
+  </Card>
+  <Card title="create_override" icon="user-clock" href="/tools/schedules/create-override">
+    Create temporary on-call overrides
+  </Card>
+  <Card title="get_escalation_policy" icon="arrow-up" href="/tools/escalation-policies/get-policy">
+    View escalation policy details
+  </Card>
+</CardGroup>
+
+## See Also
+
+- [On-Call Management Guide](/guides/on-call-management) - Best practices for managing on-call

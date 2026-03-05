@@ -1,0 +1,190 @@
+---
+title: Claude Desktop Integration
+description: Configure the PagerDuty MCP Server in Claude Desktop
+---
+
+This guide walks you through integrating the PagerDuty MCP Server with Claude Desktop.
+
+## Setup
+
+<Steps>
+  <Step title="Locate Configuration File">
+    Find your Claude Desktop configuration file based on your operating system:
+
+    - **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
+    - **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
+
+    If the file doesn't exist, create it.
+  </Step>
+
+  <Step title="Edit Configuration File">
+    Open the configuration file in a text editor and add the following configuration:
+
+    ```json
+    {
+      "mcpServers": {
+        "pagerduty-mcp": {
+          "command": "uvx",
+          "args": [
+            "pagerduty-mcp",
+            "--enable-write-tools"
+          ],
+          "env": {
+            "PAGERDUTY_USER_API_KEY": "your-pagerduty-api-key-here",
+            "PAGERDUTY_API_HOST": "https://api.pagerduty.com"
+          }
+        }
+      }
+    }
+    ```
+
+    The `--enable-write-tools` flag enables write operations, allowing you to create incidents, schedule overrides, and more.
+  </Step>
+
+  <Step title="Replace Placeholder Values">
+    Update the configuration with your actual values:
+
+    - Replace `your-pagerduty-api-key-here` with your actual PagerDuty User API Token
+    - If your PagerDuty account is located in the EU, update `PAGERDUTY_API_HOST` to `https://api.eu.pagerduty.com`
+  </Step>
+
+  <Step title="Restart Claude Desktop">
+    Completely quit and restart Claude Desktop for the changes to take effect.
+  </Step>
+
+  <Step title="Test the Integration">
+    Start a conversation with Claude and test the integration:
+    - "Show me my latest PagerDuty incidents"
+    - "List my event orchestrations"
+    - "Create a test incident"
+  </Step>
+</Steps>
+
+## Configuration Details
+
+### Configuration File Locations
+
+#### macOS
+```
+~/Library/Application Support/Claude/claude_desktop_config.json
+```
+
+To access this folder quickly, you can use Finder's "Go to Folder" feature (`Cmd+Shift+G`) and paste the path.
+
+#### Windows
+```
+%APPDATA%\Claude\claude_desktop_config.json
+```
+
+You can access this location by typing `%APPDATA%\Claude` in the Windows Explorer address bar.
+
+### Complete Configuration Example
+
+```json
+{
+  "mcpServers": {
+    "pagerduty-mcp": {
+      "command": "uvx",
+      "args": [
+        "pagerduty-mcp",
+        "--enable-write-tools"
+      ],
+      "env": {
+        "PAGERDUTY_USER_API_KEY": "your-pagerduty-api-key-here",
+        "PAGERDUTY_API_HOST": "https://api.pagerduty.com"
+      }
+    }
+  }
+}
+```
+
+### Environment Variables
+
+- **PAGERDUTY_USER_API_KEY**: Your PagerDuty User API Token. This must be stored directly in the configuration file.
+- **PAGERDUTY_API_HOST**: The PagerDuty API endpoint. Use `https://api.pagerduty.com` for US accounts or `https://api.eu.pagerduty.com` for EU accounts.
+
+## Security Considerations
+
+<Warning>
+  Unlike VS Code's secure input prompts, Claude Desktop requires you to store your API key directly in the configuration file as plain text.
+</Warning>
+
+To protect your API key:
+
+1. **Set proper file permissions** to ensure the configuration file is readable only by your user account:
+   - **macOS/Linux:** `chmod 600 ~/Library/Application\ Support/Claude/claude_desktop_config.json`
+   - **Windows:** Right-click the file > Properties > Security > Edit > Remove unnecessary users
+
+2. **Never commit the configuration file** to version control systems like Git
+
+3. **Use a dedicated API key** for Claude Desktop integration with appropriate scoped permissions
+
+4. **Regularly rotate your API keys** as part of your security practices
+
+5. **Consider the security implications** of storing credentials in plain text on your system
+
+## Testing the Integration
+
+To verify the MCP server is working correctly:
+
+1. Restart Claude Desktop completely
+2. Start a new conversation
+3. Ask Claude: "Show me my latest PagerDuty incidents"
+4. Verify that Claude responds with your incident data
+
+If the integration is working, Claude will be able to access your PagerDuty data and perform operations based on your queries.
+
+## Troubleshooting
+
+### Server Not Starting
+
+If the MCP server doesn't start:
+
+1. Verify that `uvx` is installed and available in your system PATH
+2. Check that the configuration file is valid JSON (use a JSON validator)
+3. Ensure there are no syntax errors in the configuration
+4. Try running `uvx pagerduty-mcp --enable-write-tools` manually in your terminal to check for errors
+
+### Configuration File Not Found
+
+If Claude Desktop doesn't recognize the configuration:
+
+1. Verify the file path is correct for your operating system
+2. Ensure the directory exists (create it if necessary)
+3. Check the file name is exactly `claude_desktop_config.json`
+4. Make sure there are no hidden file extensions (like `.txt`)
+
+### API Authentication Errors
+
+If you're seeing authentication errors:
+
+1. Verify your PagerDuty API key is correct
+2. Check that the API key has the necessary permissions in PagerDuty
+3. Ensure there are no extra spaces or quotes around the API key in the configuration
+4. Try generating a new API key from PagerDuty and updating the configuration
+
+### Connection Issues for EU Accounts
+
+If you're in the EU region and experiencing connection issues:
+
+1. Update `PAGERDUTY_API_HOST` to `https://api.eu.pagerduty.com`
+2. Save the configuration file
+3. Completely restart Claude Desktop
+
+### Write Operations Not Working
+
+If you can read data but not create or modify resources:
+
+1. Ensure the `--enable-write-tools` flag is included in the `args` array
+2. Verify your API key has write permissions in PagerDuty
+3. Restart Claude Desktop after making configuration changes
+
+### Changes Not Taking Effect
+
+If your configuration changes aren't being applied:
+
+1. Ensure you completely quit Claude Desktop (not just close the window)
+2. On macOS, use `Cmd+Q` to fully quit the application
+3. On Windows, check the system tray to ensure Claude is not still running
+4. Wait a few seconds before restarting
+5. Check the configuration file was saved correctly

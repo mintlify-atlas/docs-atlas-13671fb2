@@ -1,0 +1,268 @@
+---
+title: "Regional Endpoints"
+description: "Configure PagerDuty regional API endpoints for the MCP server"
+---
+
+PagerDuty operates in multiple regions with separate API endpoints. This guide explains how to configure the MCP server to connect to the correct regional endpoint for your account.
+
+## Understanding PagerDuty Regions
+
+PagerDuty has two primary regions:
+
+<CardGroup cols={2}>
+  <Card title="US Region" icon="flag-usa">
+    **API Endpoint:** `https://api.pagerduty.com`
+    
+    This is the default region and is used by most PagerDuty accounts.
+  </Card>
+  <Card title="EU Region" icon="earth-europe">
+    **API Endpoint:** `https://api.eu.pagerduty.com`
+    
+    Used by accounts based in the European Union.
+  </Card>
+</CardGroup>
+
+## Default Configuration
+
+By default, the PagerDuty MCP Server connects to the **US region** API endpoint (`https://api.pagerduty.com`). If your account is in the US region, you don't need to configure anything.
+
+<Info>
+  The default endpoint is set in the server's `ApplicationContextStrategy` class at `pagerduty_mcp/context/application_context_strategy.py:21`.
+</Info>
+
+## Determining Your Region
+
+To determine which region your PagerDuty account is in:
+
+1. Log in to your PagerDuty account
+2. Check the URL in your browser:
+   - If it's `*.pagerduty.com`, you're in the **US region**
+   - If it's `*.eu.pagerduty.com`, you're in the **EU region**
+
+Alternatively, contact your PagerDuty administrator if you're unsure about your account's region.
+
+## Configuring Regional Endpoints
+
+To configure a different API endpoint, set the `PAGERDUTY_API_HOST` environment variable when starting the MCP server.
+
+### VS Code
+
+```json settings.json
+{
+  "mcp": {
+    "servers": {
+      "pagerduty-mcp": {
+        "type": "stdio",
+        "command": "uvx",
+        "args": ["pagerduty-mcp", "--enable-write-tools"],
+        "env": {
+          "PAGERDUTY_USER_API_KEY": "${input:pagerduty-api-key}",
+          "PAGERDUTY_API_HOST": "https://api.eu.pagerduty.com"
+        }
+      }
+    }
+  }
+}
+```
+
+### Cursor
+
+```json settings.json
+{
+  "mcpServers": {
+    "pagerduty-mcp": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": ["pagerduty-mcp", "--enable-write-tools"],
+      "env": {
+        "PAGERDUTY_USER_API_KEY": "${input:pagerduty-api-key}",
+        "PAGERDUTY_API_HOST": "https://api.eu.pagerduty.com"
+      }
+    }
+  }
+}
+```
+
+### Claude Desktop
+
+**macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
+
+**Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
+
+```json claude_desktop_config.json
+{
+  "mcpServers": {
+    "pagerduty-mcp": {
+      "command": "uvx",
+      "args": ["pagerduty-mcp", "--enable-write-tools"],
+      "env": {
+        "PAGERDUTY_USER_API_KEY": "your-pagerduty-api-key-here",
+        "PAGERDUTY_API_HOST": "https://api.eu.pagerduty.com"
+      }
+    }
+  }
+}
+```
+
+### Docker
+
+Pass the regional endpoint as an environment variable:
+
+```bash
+docker run -i --rm \
+  -e PAGERDUTY_USER_API_KEY="your-api-key-here" \
+  -e PAGERDUTY_API_HOST="https://api.eu.pagerduty.com" \
+  pagerduty-mcp:latest --enable-write-tools
+```
+
+### Local Development
+
+```json settings.json
+{
+  "mcp": {
+    "servers": {
+      "pagerduty-mcp": {
+        "type": "stdio",
+        "command": "uv",
+        "args": [
+          "run",
+          "--directory",
+          "/path/to/pagerduty-mcp",
+          "python",
+          "-m",
+          "pagerduty_mcp",
+          "--enable-write-tools"
+        ],
+        "env": {
+          "PAGERDUTY_USER_API_KEY": "${input:pagerduty-api-key}",
+          "PAGERDUTY_API_HOST": "https://api.eu.pagerduty.com"
+        }
+      }
+    }
+  }
+}
+```
+
+## Regional Considerations
+
+<AccordionGroup>
+  <Accordion title="Data Residency">
+    Data in EU region accounts is stored and processed within the European Union to comply with GDPR and other regional data protection regulations.
+  </Accordion>
+
+  <Accordion title="API Token Compatibility">
+    API tokens are region-specific. A token generated in the US region will not work with the EU API endpoint and vice versa.
+  </Accordion>
+
+  <Accordion title="Service Availability">
+    Both regions offer the same features and API capabilities. Regional endpoints are designed for data residency compliance, not feature differences.
+  </Accordion>
+
+  <Accordion title="Performance">
+    Using the correct regional endpoint may provide better performance due to geographic proximity to the data centers.
+  </Accordion>
+</AccordionGroup>
+
+## Troubleshooting Regional Endpoint Issues
+
+<AccordionGroup>
+  <Accordion title="401 Unauthorized with correct token">
+    You may be using a token from one region with the API endpoint of another region. Verify that:
+    - Your token was generated in the same region as the API endpoint you're using
+    - The `PAGERDUTY_API_HOST` matches your account's region
+  </Accordion>
+
+  <Accordion title="Connection timeouts or DNS errors">
+    Double-check the `PAGERDUTY_API_HOST` value for typos. The correct values are:
+    - US: `https://api.pagerduty.com`
+    - EU: `https://api.eu.pagerduty.com`
+    
+    Note the protocol (`https://`) is required.
+  </Accordion>
+
+  <Accordion title="Not sure which region to use">
+    If you're unsure about your region:
+    1. Try the default US endpoint first
+    2. If you get authentication errors with a valid token, try the EU endpoint
+    3. Check with your PagerDuty administrator
+    4. Look at your PagerDuty web URL - it will indicate the region
+  </Accordion>
+</AccordionGroup>
+
+## Configuration Examples
+
+### US Region (Default)
+
+For US region accounts, you can omit the `PAGERDUTY_API_HOST` variable entirely:
+
+```json
+{
+  "env": {
+    "PAGERDUTY_USER_API_KEY": "your-api-key-here"
+  }
+}
+```
+
+Or explicitly set it:
+
+```json
+{
+  "env": {
+    "PAGERDUTY_USER_API_KEY": "your-api-key-here",
+    "PAGERDUTY_API_HOST": "https://api.pagerduty.com"
+  }
+}
+```
+
+### EU Region
+
+For EU region accounts, you must set the `PAGERDUTY_API_HOST` variable:
+
+```json
+{
+  "env": {
+    "PAGERDUTY_USER_API_KEY": "your-api-key-here",
+    "PAGERDUTY_API_HOST": "https://api.eu.pagerduty.com"
+  }
+}
+```
+
+## How It Works
+
+The MCP server's `create_pd_client()` function reads the `PAGERDUTY_API_HOST` environment variable and configures the PagerDuty API client accordingly:
+
+```python
+def create_pd_client() -> RestApiV2Client:
+    """Create a PagerDuty client."""
+    api_key = os.getenv("PAGERDUTY_USER_API_KEY")
+    api_host = os.getenv("PAGERDUTY_API_HOST", "https://api.pagerduty.com")
+
+    if not api_key:
+        raise RuntimeError("An API key is required to call the PagerDuty API.")
+
+    pd_client = PagerdutyMCPClient(api_key)
+    if api_host:
+        pd_client.url = api_host
+    return pd_client
+```
+
+<Info>
+  This implementation is in `pagerduty_mcp/context/application_context_strategy.py:18-29`.
+</Info>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="API Authentication" icon="key" href="/configuration/api-authentication">
+    Set up your PagerDuty API token
+  </Card>
+  <Card title="Write Mode" icon="pen" href="/configuration/write-mode">
+    Learn about read-only vs write operations
+  </Card>
+  <Card title="Client Integration" icon="plug" href="/clients/vscode">
+    Configure your MCP client
+  </Card>
+  <Card title="Troubleshooting" icon="wrench" href="/guides/troubleshooting">
+    Get help with common issues
+  </Card>
+</CardGroup>

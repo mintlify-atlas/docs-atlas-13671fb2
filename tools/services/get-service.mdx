@@ -1,0 +1,134 @@
+---
+title: "get_service"
+description: "Retrieve details for a specific service by ID"
+icon: "magnifying-glass"
+---
+
+## Overview
+
+Retrieves detailed information about a specific service. Use this tool when you need to examine the complete configuration and details of a particular service.
+
+<Info>
+This is a **read-only** tool. It retrieves data without modifying your PagerDuty account.
+</Info>
+
+## Parameters
+
+<ParamField path="service_id" type="string" required>
+  The ID of the service to retrieve.
+  
+  Example: `PSERVICE1`
+</ParamField>
+
+## Response
+
+Returns a single `Service` object with complete details.
+
+<ResponseField name="id" type="string">
+  The unique identifier for the service.
+</ResponseField>
+
+<ResponseField name="type" type="string" required>
+  The type of the object (always `"service"`).
+</ResponseField>
+
+<ResponseField name="name" type="string">
+  The name of the service.
+</ResponseField>
+
+<ResponseField name="description" type="string">
+  The description of the service.
+</ResponseField>
+
+<ResponseField name="escalation_policy" type="EscalationPolicyReference" required>
+  Reference to the escalation policy associated with this service.
+  
+  <Expandable title="EscalationPolicyReference">
+    <ResponseField name="id" type="string" required>
+      The ID of the escalation policy.
+    </ResponseField>
+    
+    <ResponseField name="type" type="string" required>
+      The type (always `"escalation_policy_reference"`).
+    </ResponseField>
+    
+    <ResponseField name="summary" type="string">
+      A short summary of the escalation policy (read-only, server-generated).
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="teams" type="TeamReference[]">
+  List of teams associated with the service.
+  
+  <Expandable title="TeamReference">
+    <ResponseField name="id" type="string" required>
+      The ID of the team.
+    </ResponseField>
+    
+    <ResponseField name="type" type="string" required>
+      The type (always `"team_reference"`).
+    </ResponseField>
+    
+    <ResponseField name="summary" type="string">
+      A short summary of the team.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Example Usage
+
+<CodeGroup>
+```text Natural Language
+Show me details for service PSERVICE1
+```
+
+```text Get Service Info
+What is the configuration for service PSERVICE1?
+```
+</CodeGroup>
+
+## Example Response
+
+```json
+{
+  "id": "PSERVICE1",
+  "type": "service",
+  "name": "Production Web Service",
+  "description": "Main web application service handling user requests",
+  "escalation_policy": {
+    "id": "PEPOLICY1",
+    "type": "escalation_policy_reference",
+    "summary": "Production Escalation Policy"
+  },
+  "teams": [
+    {
+      "id": "PTEAM1",
+      "type": "team_reference",
+      "summary": "Engineering Team"
+    },
+    {
+      "id": "PTEAM2",
+      "type": "team_reference",
+      "summary": "DevOps Team"
+    }
+  ]
+}
+```
+
+## Related Tools
+
+<CardGroup cols={2}>
+  <Card title="list_services" icon="list" href="/tools/services/list-services">
+    List all services
+  </Card>
+  <Card title="update_service" icon="pen" href="/tools/services/update-service">
+    Update service configuration
+  </Card>
+  <Card title="list_incidents" icon="fire" href="/tools/incidents/list-incidents">
+    List incidents for this service
+  </Card>
+  <Card title="get_escalation_policy" icon="arrow-up" href="/tools/escalation-policies/get-policy">
+    View escalation policy details
+  </Card>
+</CardGroup>

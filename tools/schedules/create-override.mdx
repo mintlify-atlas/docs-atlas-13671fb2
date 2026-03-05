@@ -1,0 +1,149 @@
+---
+title: "create_schedule_override"
+description: "Create a temporary override for a schedule"
+---
+
+## Overview
+
+Creates one or more temporary overrides for a schedule, allowing a different user to be on-call during a specific time period without modifying the underlying schedule configuration.
+
+<Warning>
+This is a **write tool** that modifies on-call assignments. It requires the `--enable-write-tools` flag to be enabled.
+</Warning>
+
+## When to Use Overrides
+
+Schedule overrides are ideal for:
+- **Vacation coverage** - When a scheduled user is unavailable
+- **Shift swaps** - When two users want to trade on-call shifts
+- **Temporary changes** - Short-term adjustments without modifying the schedule
+- **Emergency coverage** - Quick reassignment during incidents
+
+<Tip>
+Use overrides instead of updating the schedule when changes are temporary. This preserves the original rotation and automatically resumes normal scheduling when the override period ends.
+</Tip>
+
+## Parameters
+
+<ParamField path="schedule_id" type="string" required>
+  The ID of the schedule to create overrides for.
+</ParamField>
+
+<ParamField body="overrides" type="array" required>
+  Array of override objects. Each override requires:
+  
+  - `start` (datetime) - When the override begins (ISO 8601 format)
+  - `end` (datetime) - When the override ends (ISO 8601 format)
+  - `user_id` (string) - The PagerDuty user ID of who will be on-call during this period
+</ParamField>
+
+## Response
+
+Returns the created override(s) with confirmation of the time period and assigned user.
+
+## Example Usage
+
+### Create a single override
+```
+Create an override for schedule P4B2Z3G from March 15-22 with user U4J8K2L covering
+```
+
+### Swap shifts between users
+```
+For the Backend schedule, have Alice cover Bob's shift next Tuesday, 
+and Bob cover Alice's shift the following Thursday
+```
+
+### Cover vacation time
+```
+User Dave will be on vacation March 1-15. Have Eve cover his on-call shifts 
+in the Production schedule during that time
+```
+
+### Emergency reassignment
+```
+Override the current on-call in schedule P123 with user U456 for the next 4 hours
+```
+
+## Override Behavior
+
+### Override Priority
+
+Overrides take precedence over the regular schedule:
+1. If an override exists for a time period, that user is on-call
+2. If no override exists, the regular schedule rotation applies
+3. Multiple overlapping overrides use the most recently created override
+
+### Time Zones
+
+Override times are interpreted in the schedule's time zone. Make sure to specify times correctly based on the schedule's configured time zone.
+
+### Automatic Expiration
+
+Overrides automatically expire when the end time is reached. The regular schedule rotation resumes without any manual intervention.
+
+## Creating Multiple Overrides
+
+You can create multiple overrides in a single call by including multiple objects in the `overrides` array:
+
+```json
+{
+  "overrides": [
+    {
+      "start": "2024-03-15T09:00:00Z",
+      "end": "2024-03-22T09:00:00Z",
+      "user_id": "U4J8K2L"
+    },
+    {
+      "start": "2024-03-29T09:00:00Z",
+      "end": "2024-04-05T09:00:00Z",
+      "user_id": "U7M3N9P"
+    }
+  ]
+}
+```
+
+## Common Use Cases
+
+- **Vacation coverage** - Cover for users who are away
+- **Training** - Have experienced users shadow new team members
+- **Shift trading** - Allow team members to swap on-call duties
+- **Incident response** - Temporarily assign additional coverage during major incidents
+- **Time zone adjustments** - Cover for users in different time zones during holidays
+- **Load balancing** - Redistribute on-call burden when someone has been on-call too much
+
+## Important Notes
+
+<Note>
+The user specified in the override must have access to the schedule and appropriate permissions to receive on-call notifications.
+</Note>
+
+<Warning>
+Overrides do not prevent the originally scheduled user from receiving notifications unless explicitly removed from the escalation policy. If you need to completely exclude a user, consider updating the schedule instead.
+</Warning>
+
+<Tip>
+Verify the override was created successfully by using `list_oncalls` to check who is on-call during the override period.
+</Tip>
+
+## Related Tools
+
+<CardGroup cols={2}>
+  <Card title="list_oncalls" icon="bell" href="/tools/schedules/list-oncalls">
+    Check who is currently on-call
+  </Card>
+  <Card title="get_schedule" icon="calendar" href="/tools/schedules/get-schedule">
+    View schedule details
+  </Card>
+  <Card title="update_schedule" icon="pen" href="/tools/schedules/update-schedule">
+    Make permanent changes to the schedule
+  </Card>
+  <Card title="list_schedules" icon="list" href="/tools/schedules/list-schedules">
+    View all schedules
+  </Card>
+</CardGroup>
+
+## See Also
+
+- [Write Mode Configuration](/configuration/write-mode) - How to enable write tools
+- [On-Call Management Guide](/guides/on-call-management) - Best practices for overrides

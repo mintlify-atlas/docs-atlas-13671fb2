@@ -1,0 +1,118 @@
+---
+title: "get_event_orchestration"
+description: "Retrieve details for a specific event orchestration"
+---
+
+## Overview
+
+Retrieves detailed information about a specific event orchestration by its ID.
+
+<Info>
+This is a **read-only** tool that queries your PagerDuty account without making any changes.
+</Info>
+
+## Parameters
+
+<ParamField path="orchestration_id" type="string" required>
+  The ID of the event orchestration to retrieve
+</ParamField>
+
+## Response
+
+Returns an `EventOrchestration` object:
+
+<ResponseField name="id" type="string">
+  ID of the orchestration (read-only)
+</ResponseField>
+
+<ResponseField name="self" type="string">
+  API URL for this orchestration (read-only)
+</ResponseField>
+
+<ResponseField name="name" type="string">
+  Name of the orchestration
+</ResponseField>
+
+<ResponseField name="description" type="string">
+  Description of the orchestration's purpose
+</ResponseField>
+
+<ResponseField name="team" type="TeamReference">
+  Team that owns this orchestration. If none is specified, only admins have access.
+  
+  <Expandable title="TeamReference properties">
+    <ResponseField name="id" type="string">
+      Team ID
+    </ResponseField>
+    <ResponseField name="type" type="string">
+      Always "team_reference"
+    </ResponseField>
+    <ResponseField name="summary" type="string">
+      Team name
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="integrations" type="array">
+  List of integrations for this orchestration (read-only)
+  
+  <Expandable title="EventOrchestrationIntegration properties">
+    <ResponseField name="id" type="string">
+      Integration ID (read-only)
+    </ResponseField>
+    <ResponseField name="label" type="string">
+      Integration name
+    </ResponseField>
+    <ResponseField name="parameters" type="object">
+      Integration parameters (read-only)
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="routes" type="integer">
+  Number of different services being routed to (read-only)
+</ResponseField>
+
+<ResponseField name="created_at" type="datetime">
+  The date the orchestration was created (read-only)
+</ResponseField>
+
+<ResponseField name="created_by" type="UserReference">
+  User who created the orchestration (read-only)
+</ResponseField>
+
+<ResponseField name="updated_at" type="datetime">
+  The date the orchestration was last updated (read-only)
+</ResponseField>
+
+<ResponseField name="updated_by" type="UserReference">
+  User who last updated the orchestration (read-only)
+</ResponseField>
+
+<ResponseField name="version" type="string">
+  Version of the orchestration (read-only)
+</ResponseField>
+
+<ResponseField name="type" type="string">
+  Always "event_orchestration"
+</ResponseField>
+
+## Usage Examples
+
+### Get orchestration by ID
+
+```
+Show me details for event orchestration P1A2B3C
+```
+
+### Get orchestration information
+
+```
+What integrations are configured for orchestration P1A2B3C?
+```
+
+## Related Tools
+
+- [list_event_orchestrations](/tools/event-orchestrations/list-orchestrations) - List all orchestrations
+- [get_event_orchestration_router](/tools/event-orchestrations/get-router) - Get router configuration
+- [get_event_orchestration_global](/tools/event-orchestrations/get-global) - Get global orchestration configuration

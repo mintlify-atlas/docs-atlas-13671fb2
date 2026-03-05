@@ -1,0 +1,119 @@
+---
+title: "Delete Alert Grouping Setting"
+description: "Remove an alert grouping setting"
+icon: "trash"
+---
+
+## Overview
+
+The `delete_alert_grouping_setting` tool removes an existing alert grouping setting from your PagerDuty account. After deletion, alerts for the associated services will no longer be grouped according to this setting.
+
+<Warning>
+This is a **write** tool that permanently deletes a configuration from your PagerDuty account. You must enable write tools with the `--enable-write-tools` flag to use this tool. This action cannot be undone.
+</Warning>
+
+## Parameters
+
+<ParamField path="setting_id" type="string" required>
+  The unique identifier of the alert grouping setting to delete.
+  
+  Example: `"PAGRSET1"`
+</ParamField>
+
+## Response
+
+Returns a confirmation message.
+
+<ResponseField name="message" type="string">
+  Confirmation that the alert grouping setting was successfully deleted.
+  
+  Example: `"Successfully deleted alert grouping setting PAGRSET1"`
+</ResponseField>
+
+## Example Usage
+
+<CodeGroup>
+```bash Natural Language
+"Delete alert grouping setting PAGRSET1"
+```
+
+```bash Remove Configuration
+"Remove the alert grouping configuration PAGRSET1"
+```
+
+```bash Clean Up
+"Delete the old production grouping setting"
+```
+</CodeGroup>
+
+## Use Cases
+
+- **Remove outdated settings** - Delete configurations that are no longer needed
+- **Clean up test configurations** - Remove settings created during testing
+- **Service decommissioning** - Delete grouping settings for retired services
+- **Configuration reset** - Remove a setting before creating a new one
+- **Simplify configuration** - Eliminate unused or redundant grouping rules
+
+## Important Notes
+
+<Warning>
+**Before Deleting:**
+- Verify the setting ID to avoid deleting the wrong configuration
+- Check which services are using this setting with [Get Alert Grouping Setting](/tools/alert-grouping/get-setting)
+- Consider updating instead of deleting if you need to change the configuration
+- Understand that deletion is permanent and cannot be undone
+</Warning>
+
+<Note>
+**After Deletion:**
+- Alerts for the associated services will no longer be grouped according to this setting
+- Existing incidents are not affected - only future alert grouping behavior changes
+- You may need to create a new setting if you want different grouping behavior
+- Services without an alert grouping setting will follow default PagerDuty alert behavior
+</Note>
+
+## Best Practices
+
+1. **Verify before deleting** - Use the `get_alert_grouping_setting` tool to review the configuration before deletion
+2. **Check service impact** - Understand which services will be affected
+3. **Document the change** - Note why the setting was deleted for future reference
+4. **Test in non-production** - If possible, test the impact in a non-production environment first
+5. **Have a rollback plan** - Be prepared to create a new setting if needed
+
+## Example Workflow
+
+```bash
+# 1. Review the setting before deletion
+"Show me alert grouping setting PAGRSET1"
+
+# 2. Verify it's the correct setting to delete
+# Check the services and configuration
+
+# 3. Delete the setting
+"Delete alert grouping setting PAGRSET1"
+
+# 4. Confirm deletion
+# Verify the setting no longer appears in the list
+"List alert grouping settings"
+```
+
+## Response Example
+
+```json
+{
+  "message": "Successfully deleted alert grouping setting PAGRSET1"
+}
+```
+
+## Error Scenarios
+
+- **Setting not found** - The setting ID doesn't exist or was already deleted
+- **Permission denied** - You lack permissions to delete alert grouping settings
+- **Write tools disabled** - The `--enable-write-tools` flag is not set
+
+## Related Tools
+
+- [Get Alert Grouping Setting](/tools/alert-grouping/get-setting) - Review setting before deletion
+- [List Alert Grouping Settings](/tools/alert-grouping/list-settings) - View all settings
+- [Create Alert Grouping Setting](/tools/alert-grouping/create-setting) - Create a replacement setting
+- [Update Alert Grouping Setting](/tools/alert-grouping/update-setting) - Modify instead of deleting

@@ -1,0 +1,150 @@
+---
+title: "List Alert Grouping Settings"
+description: "Retrieve a list of alert grouping settings with optional filtering"
+icon: "list"
+---
+
+## Overview
+
+The `list_alert_grouping_settings` tool retrieves all alert grouping settings in your PagerDuty account. Alert grouping settings define how alerts are automatically grouped into incidents based on various criteria.
+
+<Note>
+This is a **read-only** tool that does not modify any data in your PagerDuty account. Alert Grouping features are available only on certain PagerDuty plans.
+</Note>
+
+## Parameters
+
+<ParamField path="service_ids" type="array" optional>
+  Filter alert grouping settings by service IDs. Only returns settings related to the specified services.
+  
+  Example: `["PSVC123", "PSVC456"]`
+</ParamField>
+
+<ParamField path="limit" type="integer" optional default="25">
+  Maximum number of results to return. Must be between 1 and 100.
+  
+  Example: `50`
+</ParamField>
+
+<ParamField path="after" type="string" optional>
+  Cursor to retrieve the next page of results. Only present if a next page exists.
+  
+  Example: `"cursor_token_here"`
+</ParamField>
+
+<ParamField path="before" type="string" optional>
+  Cursor to retrieve the previous page of results. Only present if not on the first page.
+  
+  Example: `"cursor_token_here"`
+</ParamField>
+
+<ParamField path="total" type="boolean" optional default="false">
+  Set to `true` to include the total count of settings in the response. By default, this is set to `false` for faster response times.
+  
+  Example: `true`
+</ParamField>
+
+## Response
+
+Returns a list of alert grouping setting objects.
+
+<ResponseField name="response" type="array">
+  Array of alert grouping setting objects
+  
+  <Expandable title="AlertGroupingSetting Object">
+    <ResponseField name="id" type="string">
+      The unique identifier of the alert grouping setting
+    </ResponseField>
+    
+    <ResponseField name="type" type="string">
+      The type of alert grouping configuration. Options:
+      - `content_based` - Group by matching field values
+      - `content_based_intelligent` - Intelligent grouping with field matching
+      - `intelligent` - AI-powered intelligent grouping
+      - `time` - Group alerts within a time window
+    </ResponseField>
+    
+    <ResponseField name="name" type="string">
+      A short-form name for labeling the alert grouping setting
+    </ResponseField>
+    
+    <ResponseField name="description" type="string">
+      A description providing more information about the setting
+    </ResponseField>
+    
+    <ResponseField name="config" type="object">
+      The configuration for the alert grouping setting based on the type. Contains different fields depending on the grouping type:
+      
+      **For content_based and content_based_intelligent:**
+      - `aggregate` - Whether alerts should match "all" or "any" fields
+      - `fields` - Array of field names to group on
+      - `time_window` - Time window in seconds (300-86400 for content_based, 300-3600 for content_based_intelligent)
+      - `recommended_time_window` - System-recommended time window
+      
+      **For intelligent:**
+      - `time_window` - Time window in seconds (300-3600)
+      - `recommended_time_window` - System-recommended time window
+      - `iag_fields` - Array of fields for intelligent grouping (default: ["summary"])
+      
+      **For time:**
+      - `timeout` - Duration in seconds to group alerts (60-86400, or 0 for unlimited)
+    </ResponseField>
+    
+    <ResponseField name="services" type="array">
+      Array of service references that this alert grouping setting applies to
+    </ResponseField>
+    
+    <ResponseField name="created_at" type="datetime">
+      The ISO8601 date/time when the alert grouping setting was created
+    </ResponseField>
+    
+    <ResponseField name="updated_at" type="datetime">
+      The ISO8601 date/time when the alert grouping setting was last updated
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Example Usage
+
+<CodeGroup>
+```bash Natural Language
+"Show me all alert grouping settings"
+```
+
+```bash Service Filtered
+"List alert grouping settings for service PSVC123"
+```
+
+```bash With Total Count
+"Get all alert grouping settings with total count"
+```
+</CodeGroup>
+
+## Use Cases
+
+- **Audit grouping configuration** - Review how alerts are grouped across services
+- **Service-specific review** - View grouping settings for specific services
+- **Configuration discovery** - Find existing grouping rules before creating new ones
+- **Optimization** - Identify services using different grouping strategies
+- **Compliance** - Verify alert grouping meets organizational standards
+
+## Grouping Types Explained
+
+### Content-Based
+Groups alerts when specified fields match exactly. Best for consistent alert formats.
+
+### Content-Based Intelligent
+Combines field matching with intelligent analysis for more sophisticated grouping.
+
+### Intelligent
+Uses AI to intelligently group related alerts without explicit field matching.
+
+### Time-Based
+Groups all alerts within a specified time window, regardless of content.
+
+## Related Tools
+
+- [Get Alert Grouping Setting](/tools/alert-grouping/get-setting) - Retrieve a specific setting by ID
+- [Create Alert Grouping Setting](/tools/alert-grouping/create-setting) - Create a new grouping configuration
+- [Update Alert Grouping Setting](/tools/alert-grouping/update-setting) - Modify an existing setting
+- [Delete Alert Grouping Setting](/tools/alert-grouping/delete-setting) - Remove a grouping configuration

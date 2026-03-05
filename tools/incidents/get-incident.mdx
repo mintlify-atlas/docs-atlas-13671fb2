@@ -1,0 +1,173 @@
+---
+title: "get_incident"
+description: "Retrieve detailed information about a specific incident"
+---
+
+<Info>
+**Tool Name:** `get_incident`
+
+**Category:** Incidents
+
+**Mode:** Read-only
+</Info>
+
+## Overview
+
+The `get_incident` tool retrieves detailed information about a specific incident by its ID or incident number. You can optionally include additional related information such as users, services, notes, and more.
+
+## Parameters
+
+<ParamField path="incident_id" type="string" required>
+  The ID or incident number of the incident to retrieve.
+  
+  **Example:** `"Q1234567890ABCDE"` or `"12345"`
+</ParamField>
+
+<ParamField path="include" type="list[string]" optional>
+  List of additional information to include in the response.
+  
+  **Available options:**
+  - `users` - Include user details
+  - `services` - Include service details
+  - `assignments` - Include assignment information
+  - `acknowledgers` - Include who acknowledged the incident
+  - `custom_fields` - Include custom field values
+  - `teams` - Include team information
+  - `escalation_policies` - Include escalation policy details
+  - `notes` - Include incident notes
+  - `urgencies` - Include urgency information
+  - `priorities` - Include priority information
+  
+  **Example:** `["users", "services", "notes"]`
+</ParamField>
+
+## Usage Examples
+
+### Get basic incident information
+
+```python
+{
+  "incident_id": "Q1234567890ABCDE"
+}
+```
+
+### Get incident with notes and assignments
+
+```python
+{
+  "incident_id": "Q1234567890ABCDE",
+  "include": ["notes", "assignments", "users"]
+}
+```
+
+### Get incident by incident number
+
+```python
+{
+  "incident_id": "12345",
+  "include": ["services", "teams", "escalation_policies"]
+}
+```
+
+## Response Format
+
+Returns an `Incident` object with detailed information.
+
+<ResponseField name="id" type="string">
+  The unique ID of the incident.
+</ResponseField>
+
+<ResponseField name="incident_number" type="integer">
+  The incident number (unique across your account).
+</ResponseField>
+
+<ResponseField name="status" type="string">
+  Current status of the incident.
+  
+  **Values:** `triggered`, `acknowledged`, or `resolved`
+</ResponseField>
+
+<ResponseField name="title" type="string">
+  A succinct description of the nature, symptoms, cause, or effect of the incident.
+</ResponseField>
+
+<ResponseField name="summary" type="string" optional>
+  A short summary of the incident.
+</ResponseField>
+
+<ResponseField name="created_at" type="datetime">
+  The time the incident was first triggered.
+</ResponseField>
+
+<ResponseField name="updated_at" type="datetime">
+  The time the incident was last modified.
+</ResponseField>
+
+<ResponseField name="resolved_at" type="datetime" optional>
+  The time the incident was resolved (null if not resolved).
+</ResponseField>
+
+<ResponseField name="service" type="ServiceReference">
+  The service the incident is associated with.
+  
+  <ResponseField name="id" type="string">
+    Service ID
+  </ResponseField>
+  
+  <ResponseField name="type" type="string">
+    Always "service_reference"
+  </ResponseField>
+</ResponseField>
+
+<ResponseField name="assignments" type="list[Assignment]" optional>
+  List of users assigned to the incident (included if specified in `include` parameter).
+  
+  <ResponseField name="at" type="datetime">
+    When the assignment was created
+  </ResponseField>
+  
+  <ResponseField name="assignee" type="UserReference">
+    The assigned user
+  </ResponseField>
+</ResponseField>
+
+<ResponseField name="type" type="string">
+  Always returns "incident"
+</ResponseField>
+
+## Common Errors
+
+<Warning>
+**Incident not found**
+
+If the incident ID doesn't exist or you don't have access:
+
+```
+404 Not Found: The incident was not found or you do not have permission to access it.
+```
+
+**Solution:** Verify the incident ID is correct and you have proper permissions.
+</Warning>
+
+## Related Tools
+
+<CardGroup cols={2}>
+  <Card title="list_incidents" icon="list" href="/tools/incidents/list-incidents">
+    List all incidents with filters
+  </Card>
+  <Card title="manage_incidents" icon="sliders" href="/tools/incidents/manage-incidents">
+    Update incident status or assignment
+  </Card>
+  <Card title="add_note_to_incident" icon="comment" href="/tools/incidents/add-note">
+    Add a note to the incident
+  </Card>
+  <Card title="list_incident_notes" icon="list" href="/tools/incidents/add-note">
+    View all incident notes
+  </Card>
+</CardGroup>
+
+## Source Reference
+
+**Function:** `get_incident` in `pagerduty_mcp/tools/incidents.py:57`
+
+**Models:** `GetIncidentQuery`, `Incident` in `pagerduty_mcp/models/incidents.py`

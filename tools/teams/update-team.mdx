@@ -1,0 +1,123 @@
+---
+title: "update_team"
+description: "Update an existing team"
+---
+
+## Overview
+
+Updates an existing team's name, description, or default role for new members.
+
+<Warning>
+This is a **write tool** that modifies resources in your PagerDuty account. It requires the `--enable-write-tools` flag to be enabled.
+</Warning>
+
+## Parameters
+
+<ParamField path="team_id" type="string" required>
+  The ID of the team to update.
+</ParamField>
+
+<ParamField body="name" type="string" required>
+  The updated name for the team.
+</ParamField>
+
+<ParamField body="description" type="string">
+  Updated description for the team. Set to null or empty string to remove the description.
+</ParamField>
+
+<ParamField body="default_role" type="string">
+  Updated default role for new team members:
+  - `manager` - New members get manager permissions by default
+  - `none` - No default role (must be specified when adding members)
+</ParamField>
+
+## Response
+
+Returns the updated team object with all modified fields.
+
+## Example Usage
+
+### Update team name
+```
+Rename team P4B2Z3G to "Platform Engineering"
+```
+
+### Update description
+```
+Update the Backend Services team description to "Owns all backend APIs and services"
+```
+
+### Change default role
+```
+Change the default role for the Support team to "none"
+```
+
+### Update multiple fields
+```
+Update team P4B2Z3G: rename to "DevOps" and change description to "Infrastructure and deployment"
+```
+
+## Impact of Team Updates
+
+### Name Changes
+
+Updating a team's name affects:
+- How the team appears in the PagerDuty UI
+- Team references in services, schedules, and escalation policies (they update automatically)
+- Team search and filtering
+
+<Note>
+Changing a team's name does not affect its ID. All existing references using the team ID remain valid.
+</Note>
+
+### Default Role Changes
+
+Changing `default_role` only affects **future** member additions:
+- Existing team members keep their current roles
+- Future `add_team_member` calls will use the new default role if no role is specified
+
+### Description Changes
+
+Descriptions are for documentation purposes and don't affect team functionality.
+
+## Common Use Cases
+
+- **Team renaming** - Update names when teams reorganize or change focus
+- **Documentation updates** - Keep team descriptions current
+- **Permission model changes** - Adjust default roles as team structure evolves
+- **Standardization** - Enforce naming conventions across teams
+- **Clarification** - Add or improve descriptions for better understanding
+
+## Important Notes
+
+<Warning>
+**Team updates require all fields.** Unlike some other update operations, you must provide the complete team configuration including unchanged fields.
+</Warning>
+
+### Best Practice Workflow
+
+1. **Get current configuration** - Use `get_team` to retrieve existing team details
+2. **Modify as needed** - Make your changes to the team data
+3. **Update the team** - Call `update_team` with the modified configuration
+4. **Verify changes** - Use `get_team` again to confirm the updates
+
+## Related Tools
+
+<CardGroup cols={2}>
+  <Card title="get_team" icon="users" href="/tools/teams/get-team">
+    Get current team configuration
+  </Card>
+  <Card title="list_teams" icon="list" href="/tools/teams/list-teams">
+    View all teams
+  </Card>
+  <Card title="delete_team" icon="trash" href="/tools/teams/delete-team">
+    Delete a team (write mode)
+  </Card>
+  <Card title="manage_members" icon="user" href="/tools/teams/manage-members">
+    Manage team membership
+  </Card>
+</CardGroup>
+
+## See Also
+
+- [Write Mode Configuration](/configuration/write-mode) - How to enable write tools

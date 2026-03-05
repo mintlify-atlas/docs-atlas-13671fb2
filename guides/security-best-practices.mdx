@@ -1,0 +1,386 @@
+---
+title: Security Best Practices
+description: Security guidance for configuring and using the PagerDuty MCP server
+---
+
+This guide provides security recommendations for deploying and using the PagerDuty MCP server safely.
+
+## API Token Management
+
+### Obtaining a User API Token
+
+The MCP server requires a PagerDuty User API Token for authentication:
+
+1. Navigate to **My Profile** > **User Settings** in PagerDuty
+2. Locate the **API Access** section
+3. Click **Create API User Token**
+4. Copy the token immediately (it won't be shown again)
+5. Store it securely
+
+<Warning>
+User API Tokens have the same permissions as your user account. Never share your token or commit it to source control.
+</Warning>
+
+### Token Permissions
+
+User API Tokens inherit permissions from the user who created them:
+
+- **Responder role**: Read-only access to most resources
+- **Manager role**: Can modify teams and schedules
+- **Admin role**: Full account access
+- **Account Owner role**: Complete control including billing
+
+For Freemium accounts, token permissions are limited based on user role as defined in [PagerDuty's documentation](https://support.pagerduty.com/main/docs/user-roles).
+
+<Tip>
+Use the principle of least privilege: create tokens with the minimum permissions needed for the intended use case.
+</Tip>
+
+### Secure Token Storage
+
+#### Local Development
+
+**VS Code and Cursor**: Use input prompts instead of hardcoding tokens
+
+```json
+{
+  "mcp": {
+    "inputs": [
+      {
+        "type": "promptString",
+        "id": "pagerduty-api-key",
+        "description": "PagerDuty API Key",
+        "password": true
+      }
+    ],
+    "servers": {
+      "pagerduty-mcp": {
+        "env": {
+          "PAGERDUTY_USER_API_KEY": "${input:pagerduty-api-key}"
+        }
+      }
+    }
+  }
+}
+```
+
+This prompts you for the token each time the server starts instead of storing it in the configuration.
+
+**Claude Desktop**: Tokens must be stored in the configuration file
+
+```json
+{
+  "mcpServers": {
+    "pagerduty-mcp": {
+      "env": {
+        "PAGERDUTY_USER_API_KEY": "your-token-here"
+      }
+    }
+  }
+}
+```
+
+<Warning>
+**Security implications for Claude Desktop:**
+- Token is stored in plain text
+- Configuration file should have restricted permissions (readable only by your user)
+- Consider the risk before storing tokens this way
+- On macOS: `chmod 600 ~/Library/Application\ Support/Claude/claude_desktop_config.json`
+</Warning>
+
+#### Production Deployments
+
+For production use:
+
+1. **Use environment variables**: Never hardcode tokens in configuration files
+2. **Use secrets management**: Store tokens in tools like:
+   - AWS Secrets Manager
+   - HashiCorp Vault
+   - Kubernetes Secrets
+   - Cloud provider secret services
+
+3. **Rotate regularly**: Change tokens periodically and after any suspected compromise
+4. **Audit token usage**: Review which tokens are active and revoke unused ones
+
+### Token Rotation
+
+Regularly rotate API tokens to minimize risk:
+
+1. Create a new User API Token in PagerDuty
+2. Update your MCP server configuration with the new token
+3. Test that the server works with the new token
+4. Delete the old token from PagerDuty
+
+<Tip>
+Consider setting a reminder to rotate tokens quarterly or after team member departures.
+</Tip>
+
+## Read-Only vs Write Mode
+
+### Understanding the Modes
+
+The MCP server operates in two modes:
+
+**Read-Only Mode (default)**:
+- Only tools that retrieve information are available
+- Cannot create, modify, or delete resources
+- Safer for exploration and read-only integrations
+- Suitable for reporting and monitoring use cases
+
+**Write Mode** (enabled with `--enable-write-tools`):
+- All tools are available, including those that modify data
+- Can create incidents, schedule overrides, update services, etc.
+- Required for automation and incident response
+- Higher risk of accidental or unauthorized changes
+
+### Choosing the Right Mode
+
+<AccordionGroup>
+  <Accordion title="Use Read-Only Mode for:">
+    - **Reporting and dashboards**: Display incident statistics, on-call schedules
+    - **Learning and exploration**: Safely explore your PagerDuty configuration
+    - **Read-only assistants**: AI assistants that only answer questions
+    - **Audit and compliance**: Review configurations without risk of changes
+    - **Untrusted environments**: When you're unsure about safety
+  </Accordion>
+
+  <Accordion title="Use Write Mode for:">
+    - **Incident response**: Create and manage incidents, add responders
+    - **On-call management**: Create schedule overrides
+    - **Automation**: Automated incident creation from external systems
+    - **Configuration management**: Update services, orchestrations, schedules
+    - **Trusted environments**: When you control the AI assistant behavior
+  </Accordion>
+</AccordionGroup>
+
+### Enabling Write Mode Safely
+
+When enabling write tools:
+
+1. **Understand the risks**: Write operations can:
+   - Create incidents (triggering on-call notifications)
+   - Modify schedules (affecting on-call coverage)
+   - Change escalation policies (altering incident routing)
+   - Delete resources (potential data loss)
+
+2. **Use in controlled environments**: Enable only when:
+   - You trust the AI assistant's behavior
+   - You understand what operations will be performed
+   - You can undo changes if needed
+
+3. **Start with read-only**: Test your workflows in read-only mode first
+
+4. **Review AI suggestions**: Always review what the AI plans to do before confirming write operations
+
+## Client Configuration Security
+
+### Regional Endpoints
+
+Configure the correct API endpoint for your account region:
+
+**US region** (default):
+```json
+{
+  "PAGERDUTY_API_HOST": "https://api.pagerduty.com"
+}
+```
+
+**EU region**:
+```json
+{
+  "PAGERDUTY_API_HOST": "https://api.eu.pagerduty.com"
+}
+```
+
+<Warning>
+Using the wrong endpoint will result in authentication failures and may expose your token to unintended API endpoints.
+</Warning>
+
+### Network Security
+
+**TLS/SSL**: The MCP server always uses HTTPS for PagerDuty API communication. Never disable certificate verification.
+
+**Firewall rules**: If using in a restricted network, allow outbound HTTPS to:
+- `api.pagerduty.com` (US)
+- `api.eu.pagerduty.com` (EU)
+
+**Proxy configuration**: If using a proxy, ensure:
+- The proxy supports HTTPS
+- Certificate validation works correctly
+- Proxy logs don't capture token headers
+
+### Docker Security
+
+When running the MCP server in Docker:
+
+1. **Don't commit images with tokens**: Use environment variables, not baked-in tokens
+2. **Use minimal base images**: Smaller images have fewer vulnerabilities
+3. **Run as non-root**: The official image uses a non-root user
+4. **Scan for vulnerabilities**: Regularly scan Docker images
+5. **Limit container permissions**: Use Docker security options like `--read-only` where possible
+
+## Audit Logging Recommendations
+
+### Monitoring API Activity
+
+PagerDuty provides audit logs for API activity:
+
+1. Navigate to **Account Settings** > **Audit Trail** in PagerDuty
+2. Filter by:
+   - API authentication events
+   - Resource modifications
+   - User performing actions
+3. Review logs regularly for:
+   - Unexpected API calls
+   - Unauthorized access attempts
+   - Unusual patterns
+
+### What to Monitor
+
+<AccordionGroup>
+  <Accordion title="Incident Creation Patterns">
+    Monitor for:
+    - Unusual volumes of incidents
+    - Incidents created at odd hours
+    - Incidents with suspicious content
+    - Incidents targeting unexpected services
+  </Accordion>
+
+  <Accordion title="Schedule Modifications">
+    Watch for:
+    - Overrides created by unfamiliar users
+    - Changes to critical schedules
+    - Unexpected gaps in coverage
+    - Schedule deletions
+  </Accordion>
+
+  <Accordion title="Configuration Changes">
+    Alert on:
+    - Service configuration modifications
+    - Escalation policy updates
+    - Integration key changes
+    - User permission changes
+  </Accordion>
+
+  <Accordion title="Authentication Events">
+    Track:
+    - Failed authentication attempts
+    - API token usage patterns
+    - Access from unusual locations
+    - Multiple tokens for same user
+  </Accordion>
+</AccordionGroup>
+
+## Least Privilege Principles
+
+### Creating Dedicated Users
+
+For production integrations, create dedicated users:
+
+1. **Create a dedicated PagerDuty user** (e.g., `mcp-integration@company.com`)
+2. **Assign minimal required role**:
+   - Read-only use cases: Responder role
+   - Incident management: Manager role
+   - Full automation: Admin role (use sparingly)
+3. **Generate token from dedicated user**
+4. **Document the token's purpose**
+5. **Set up monitoring** for this user's API activity
+
+### Restricting Tool Access
+
+Consider creating multiple MCP server instances with different configurations:
+
+**Monitoring instance** (read-only):
+- Default configuration
+- No `--enable-write-tools` flag
+- Used for dashboards and reporting
+
+**Operations instance** (write-enabled):
+- Includes `--enable-write-tools` flag
+- Used only when changes are needed
+- Access restricted to authorized personnel
+
+### Team Access Controls
+
+Use PagerDuty teams to control data access:
+
+1. **Organize resources by team**: Associate services, schedules, and escalation policies with teams
+2. **Limit user team membership**: Users only see resources for their teams
+3. **Use team-scoped tokens**: Tokens only have access to associated teams
+4. **Review team membership regularly**: Remove users who no longer need access
+
+## Incident Response for Token Compromise
+
+If you suspect a token has been compromised:
+
+### Immediate Actions
+
+1. **Revoke the token immediately**:
+   - Go to User Settings > API Access
+   - Delete the compromised token
+
+2. **Review audit logs**:
+   - Check for unauthorized API calls
+   - Identify what actions were performed
+   - Document the timeline
+
+3. **Generate a new token**:
+   - Create a new User API Token
+   - Update all configurations using the old token
+   - Test the new token works correctly
+
+4. **Assess impact**:
+   - Review incidents created
+   - Check for configuration changes
+   - Verify schedule integrity
+   - Look for data exfiltration
+
+### Prevention
+
+- **Never commit tokens to source control**: Use `.gitignore` for config files
+- **Don't share tokens**: Each person should have their own
+- **Avoid logging tokens**: Ensure logs don't capture environment variables
+- **Use short-lived credentials when possible**: Rotate tokens regularly
+- **Monitor for exposed secrets**: Use tools like GitHub Secret Scanning
+
+## Compliance Considerations
+
+### Data Privacy
+
+When using AI assistants with PagerDuty data:
+
+1. **Understand data flow**: Know where your PagerDuty data goes:
+   - AI provider's servers (OpenAI, Anthropic, etc.)
+   - MCP client applications
+   - Local storage and caches
+
+2. **Review privacy policies**: Check if your AI provider:
+   - Uses data for training
+   - Stores conversation history
+   - Shares data with third parties
+
+3. **Anonymize sensitive data**: Consider redacting:
+   - Customer names
+   - Personal information
+   - Proprietary technical details
+   - Internal system names
+
+### Regulatory Requirements
+
+For regulated industries:
+
+- **SOC 2**: Ensure token management meets access control requirements
+- **HIPAA**: Avoid including PHI in incident details visible to the AI
+- **GDPR**: Be aware that PagerDuty data may include personal information
+- **PCI DSS**: Never include payment card data in incident information
+
+<Tip>
+Consult your compliance and security teams before deploying AI-assisted tools in production environments.
+</Tip>
+
+## Related Resources
+
+- [Configuration Guide](/configuration/server-options)
+- [Installation Guide](/installation)
+- [PagerDuty API Authentication](https://developer.pagerduty.com/docs/ZG9jOjExMDI5NTUw-authentication)
+- [PagerDuty Security](https://www.pagerduty.com/security/)

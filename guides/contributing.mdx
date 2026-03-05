@@ -1,0 +1,490 @@
+---
+title: Contributing Guide
+description: How to contribute to the PagerDuty MCP Server project
+---
+
+Thank you for your interest in contributing to the PagerDuty MCP Server! This guide will help you get started with development, testing, and submitting contributions.
+
+<Note>
+PagerDuty MCP Server is an open-source project offering community-based support. For assistance, please open an issue on [GitHub](https://github.com/pagerduty/pagerduty-mcp-server) or ask in the [PagerDuty Community Forum](https://community.pagerduty.com/).
+</Note>
+
+## Ways to Contribute
+
+There are many ways to contribute to the project:
+
+- **Report bugs**: Help us identify and fix issues
+- **Request features**: Suggest new functionality
+- **Improve documentation**: Fix typos, clarify instructions, add examples
+- **Write code**: Implement new features or fix bugs
+- **Share feedback**: Let us know how the server works for you
+
+## Reporting Bugs
+
+### Security Vulnerabilities
+
+<Warning>
+**Do not open GitHub issues for security vulnerabilities.** Instead, email [security@pagerduty.com](mailto:security@pagerduty.com).
+</Warning>
+
+For security issues, please:
+- Provide detailed description of the vulnerability
+- Include steps to reproduce
+- Suggest potential fixes if possible
+- Allow time for the team to address before public disclosure
+
+See the [Security Policy](https://github.com/pagerduty/pagerduty-mcp-server/blob/main/SECURITY.md) for more details.
+
+### Regular Bugs
+
+Before reporting a bug:
+
+1. **Search existing issues**: Check if the bug is already reported at [github.com/pagerduty/pagerduty-mcp-server/issues](https://github.com/pagerduty/pagerduty-mcp-server/issues)
+
+2. **Verify it's a bug**: Ensure it's not a configuration issue (see [Troubleshooting Guide](/guides/troubleshooting))
+
+3. **Gather information**:
+   - Steps to reproduce
+   - Expected behavior
+   - Actual behavior
+   - Version information (`uvx pagerduty-mcp --version`)
+   - Environment (OS, Python version, client application)
+   - Error messages and logs
+
+4. **Create a bug report**: Use the [bug report template](https://github.com/pagerduty/pagerduty-mcp-server/issues/new?labels=bug&template=bug_report.md)
+
+## Requesting Features
+
+Before requesting a feature:
+
+1. **Check existing requests**: Look for similar feature requests in [GitHub issues](https://github.com/pagerduty/pagerduty-mcp-server/issues)
+
+2. **Discuss in the community**: Consider posting in the [PagerDuty Community Forum](https://community.pagerduty.com/) to gauge interest and gather feedback
+
+3. **Create a feature request**: Use the [feature request template](https://github.com/pagerduty/pagerduty-mcp-server/issues/new?labels=enhancement&template=feature_request.md)
+
+**In your feature request, include:**
+- Clear description of the proposed feature
+- Use cases and benefits
+- Potential implementation approach
+- Examples of how it would be used
+- Alternatives you've considered
+
+<Note>
+The core team will review feature requests and may:
+- Accept and schedule for development
+- Request more information
+- Postpone for future consideration
+- Decline if it doesn't align with project goals
+</Note>
+
+## Development Setup
+
+Follow these steps to set up a local development environment.
+
+### Prerequisites
+
+- **asdf-vm**: Version management tool ([asdf-vm.com](https://asdf-vm.com/))
+- **uv**: Python package installer ([github.com/astral-sh/uv](https://github.com/astral-sh/uv))
+- **PagerDuty User API Token**: See [Installation Guide](/installation) for instructions
+
+### Initial Setup
+
+<Steps>
+  <Step title="Clone the repository">
+    ```bash
+    git clone https://github.com/pagerduty/pagerduty-mcp-server.git
+    cd pagerduty-mcp-server
+    ```
+  </Step>
+
+  <Step title="Install asdf plugins">
+    ```bash
+    asdf plugin add python
+    asdf plugin add nodejs https://github.com/asdf-vm/asdf-nodejs.git
+    asdf plugin add uv
+    ```
+  </Step>
+
+  <Step title="Install tool versions">
+    ```bash
+    asdf install
+    ```
+    
+    This reads `.tool-versions` and installs:
+    - Python 3.12
+    - Node.js
+    - uv
+  </Step>
+
+  <Step title="Create virtual environment and install dependencies">
+    ```bash
+    uv sync
+    ```
+    
+    This creates a virtual environment and installs all dependencies including dev tools.
+  </Step>
+
+  <Step title="Configure environment variables">
+    Create a `.env` file:
+    ```bash
+    cp .env.example .env
+    ```
+    
+    Edit `.env` and add your PagerDuty API token:
+    ```bash
+    PAGERDUTY_USER_API_KEY=your-token-here
+    PAGERDUTY_API_HOST=https://api.pagerduty.com
+    ```
+  </Step>
+</Steps>
+
+### Running Locally
+
+To run the MCP server from your local checkout:
+
+```bash
+uv run python -m pagerduty_mcp --enable-write-tools
+```
+
+### Configuring Your MCP Client
+
+Update your MCP client to use the local version:
+
+**VS Code / Cursor:**
+```json
+{
+  "pagerduty-mcp": { 
+    "type": "stdio",
+    "command": "uv",
+    "args": [
+      "run",
+      "--directory",
+      "/absolute/path/to/pagerduty-mcp-server",
+      "python",
+      "-m",
+      "pagerduty_mcp",
+      "--enable-write-tools"
+    ],
+    "env": {
+      "PAGERDUTY_USER_API_KEY": "${input:pagerduty-api-key}"
+    }
+  }
+}
+```
+
+<Note>
+Replace `/absolute/path/to/pagerduty-mcp-server` with the actual path where you cloned the repository.
+</Note>
+
+## Development Workflow
+
+### Step 1: Find Something to Work On
+
+**For new contributors:**
+- Look for issues labeled `good first issue`
+- Check for issues labeled `help wanted`
+- Review the [backlog](https://github.com/pagerduty/pagerduty-mcp-server/issues)
+
+**For experienced contributors:**
+- Check `high priority` issues for impactful work
+- Review `enhancement` issues for new features
+- Look at active [pull requests](https://github.com/pagerduty/pagerduty-mcp-server/pulls) to avoid duplicate work
+
+**Before starting work:**
+- Comment on the issue to let others know you're working on it
+- Ask clarifying questions if needed
+- Ensure no one else is already working on it
+
+### Step 2: Design and Discussion
+
+For significant changes:
+
+1. **Propose your approach**: Comment on the issue with your implementation plan
+2. **Gather feedback**: Discuss with maintainers and community
+3. **Iterate on design**: Refine based on feedback
+4. **Get approval**: Wait for maintainer acknowledgment before starting
+
+<Tip>
+For large features, consider creating a design document or RFC (Request for Comments) to facilitate discussion.
+</Tip>
+
+### Step 3: Code Your Changes
+
+**Work on the `next` branch**: All contributions should target the `next` branch, not `main`.
+
+```bash
+# Create a new branch from next
+git checkout next
+git pull origin next
+git checkout -b feature/your-feature-name
+```
+
+**Development guidelines:**
+
+- **One feature per PR**: Keep pull requests focused on a single feature or bugfix
+- **Write tests**: Add unit tests for new features and bug fixes
+- **Follow code style**: Use the project's linting and formatting rules
+- **Document your code**: Add docstrings and comments where appropriate
+- **Keep changes minimal**: Avoid unnecessary refactoring or housekeeping changes
+
+### Step 4: Testing
+
+#### Run Unit Tests
+
+```bash
+# Run all tests
+uv run pytest
+
+# Run specific test file
+uv run pytest tests/test_incidents.py
+
+# Run with coverage
+uv run coverage run -m pytest
+uv run coverage report
+```
+
+#### Run Evals
+
+Evals test that tool descriptions are suitable for AI assistants:
+
+```bash
+uv run python tests/evals/run_tests.py
+```
+
+<Note>
+Evals require an LLM API key (OpenAI or AWS Bedrock). See `tests/evals/README.md` for configuration.
+</Note>
+
+#### Lint and Format Code
+
+```bash
+# Run linter
+uv run ruff check .
+
+# Auto-fix issues
+uv run ruff check --fix .
+
+# Format code
+uv run ruff format .
+
+# Type checking
+uv run pyright
+```
+
+All of these checks will run in CI, so it's best to run them locally first.
+
+### Step 5: Commit Your Changes
+
+**Follow Conventional Commits**: The project uses [conventional commits](https://www.conventionalcommits.org) for commit messages.
+
+**Format:**
+```
+<type>: <description>
+
+[optional body]
+
+[optional footer]
+```
+
+**Types:**
+- `feat`: New feature
+- `fix`: Bug fix
+- `docs`: Documentation changes
+- `refactor`: Code refactoring
+- `test`: Test changes
+- `chore`: Maintenance tasks
+
+**Examples:**
+```bash
+git commit -m "feat: add support for incident workflows"
+git commit -m "fix: handle missing service_id in create_incident"
+git commit -m "docs: update installation instructions for Windows"
+```
+
+<Tip>
+Use the [Conventional Commits VS Code extension](https://marketplace.visualstudio.com/items?itemName=vivaxy.vscode-conventional-commits) to simplify commit message formatting.
+</Tip>
+
+A pre-commit hook enforces conventional commit format, so your commit will be rejected if it doesn't follow the standard.
+
+### Step 6: Create a Pull Request
+
+<Steps>
+  <Step title="Push your branch">
+    ```bash
+    git push origin feature/your-feature-name
+    ```
+  </Step>
+
+  <Step title="Create pull request">
+    Go to [github.com/pagerduty/pagerduty-mcp-server](https://github.com/pagerduty/pagerduty-mcp-server) and create a pull request.
+  </Step>
+
+  <Step title="Fill out the PR template">
+    Provide:
+    - Description of changes
+    - Related issue number
+    - Testing performed
+    - Screenshots/examples if applicable
+  </Step>
+
+  <Step title="Ensure CI passes">
+    The PR will trigger automated checks:
+    - Unit tests
+    - Linting
+    - Type checking
+    
+    Fix any failures before requesting review.
+  </Step>
+</Steps>
+
+**Pull request requirements:**
+
+- Title must follow conventional commits format
+- Title should be lowercase
+- No period at the end of the title
+- Description must explain motivation and approach
+- All CI checks must pass
+- At least one approving review required
+
+**Examples of good PR titles:**
+- `feat: add create_status_page_post tool`
+- `fix: handle null values in schedule overrides`
+- `docs: clarify regional endpoint configuration`
+
+### Step 7: Review and Iteration
+
+1. **Respond to feedback**: Address reviewer comments promptly
+2. **Push new commits**: Add commits to the same branch
+3. **Request re-review**: After addressing feedback
+4. **Be patient**: Maintainers are volunteers and may take time to review
+
+<Note>
+All commits will be squashed when merged, so don't worry about having many small commits during iteration.
+</Note>
+
+### Step 8: Merge
+
+Once approved:
+
+1. A maintainer will squash-merge your PR to `next`
+2. Your changes will be included in the next pre-release
+3. After testing, changes will be merged to `main`
+4. Your name will be added to the release notes
+
+## Code Style and Standards
+
+### Python Style
+
+- **PEP 8**: Follow Python style guidelines
+- **Type hints**: Use type annotations for all functions
+- **Docstrings**: Use Google-style docstrings
+- **Line length**: Maximum 120 characters
+
+**Example:**
+```python
+def create_incident(create_model: IncidentCreateRequest) -> Incident:
+    """Create a new incident.
+    
+    Args:
+        create_model: The incident creation parameters
+    
+    Returns:
+        The created incident object
+    
+    Raises:
+        ValidationError: If required fields are missing
+    """
+    response = get_client().rpost("/incidents", json=create_model.model_dump())
+    return Incident.model_validate(response)
+```
+
+### Tool Design Guidelines
+
+When adding new tools:
+
+1. **Clear descriptions**: Write tool descriptions for AI assistants, not humans
+2. **Intuitive parameters**: Use parameter names that match PagerDuty terminology
+3. **Error handling**: Provide helpful error messages
+4. **Documentation**: Update tool reference docs
+5. **Examples**: Include usage examples in docstrings
+
+### Testing Standards
+
+- **Unit tests required**: All new functionality must have tests
+- **Test file naming**: `test_<module>.py`
+- **Test function naming**: `test_<function>_<scenario>`
+- **Use fixtures**: Leverage pytest fixtures for common setup
+- **Mock external calls**: Don't make real API calls in tests
+
+**Example:**
+```python
+def test_create_incident_success(mock_client):
+    """Test successful incident creation."""
+    create_request = IncidentCreateRequest(
+        title="Test incident",
+        service_id="SVC123"
+    )
+    
+    result = create_incident(create_request)
+    
+    assert result.title == "Test incident"
+    assert result.service.id == "SVC123"
+```
+
+## Project Structure
+
+```
+pagerduty-mcp-server/
+├── pagerduty_mcp/          # Main package
+│   ├── __init__.py
+│   ├── __main__.py         # Entry point
+│   ├── server.py           # MCP server implementation
+│   ├── client.py           # PagerDuty API client
+│   ├── context/            # Context and authentication
+│   ├── models/             # Pydantic models
+│   └── tools/              # Tool implementations
+│       ├── incidents.py
+│       ├── schedules.py
+│       └── ...
+├── tests/                  # Test suite
+│   ├── test_incidents.py
+│   ├── test_schedules.py
+│   └── evals/              # LLM evaluation tests
+├── docs/                   # Documentation (separate repo)
+├── pyproject.toml          # Project metadata and dependencies
+├── uv.lock                 # Locked dependencies
+└── README.md               # Project overview
+```
+
+## Community and Support
+
+### Communication Channels
+
+- **GitHub Issues**: Bug reports and feature requests
+- **GitHub Discussions**: General questions and discussions
+- **PagerDuty Community Forum**: Community support and best practices
+- **Pull Request Comments**: Technical discussions about specific changes
+
+### Code of Conduct
+
+All contributors must follow the [Code of Conduct](https://github.com/pagerduty/pagerduty-mcp-server/blob/main/CODE_OF_CONDUCT.md). We are committed to providing a welcoming and inclusive environment.
+
+### Recognition
+
+Contributors are recognized in:
+- Release notes
+- GitHub contributors page
+- Project documentation (for significant contributions)
+
+## Additional Resources
+
+- [PagerDuty API Documentation](https://developer.pagerduty.com/)
+- [Model Context Protocol Specification](https://modelcontextprotocol.io/)
+- [MCP Python SDK](https://github.com/modelcontextprotocol/python-sdk)
+- [Project License](https://github.com/pagerduty/pagerduty-mcp-server/blob/main/LICENSE)
+
+## Thank You!
+
+Your contributions make the PagerDuty MCP Server better for everyone. Whether you're fixing a typo, reporting a bug, or implementing a major feature, your help is appreciated! 💚

@@ -1,0 +1,135 @@
+---
+title: "delete_team"
+description: "Delete a team"
+---
+
+## Overview
+
+Permanently deletes a team from your PagerDuty account.
+
+<Warning>
+This is a **destructive write tool** that permanently removes resources. It requires the `--enable-write-tools` flag to be enabled.
+</Warning>
+
+## Parameters
+
+<ParamField path="team_id" type="string" required>
+  The ID of the team to delete.
+</ParamField>
+
+## Response
+
+Returns a confirmation message that the team was successfully deleted.
+
+## Example Usage
+
+### Delete a team by ID
+```
+Delete team P4B2Z3G
+```
+
+### Delete after confirmation
+```
+Remove the "Old Project" team from PagerDuty
+```
+
+## Impact of Deleting a Team
+
+<Warning>
+Deleting a team is **permanent** and cannot be undone. Make sure you understand the impact before proceeding.
+</Warning>
+
+### What Happens When You Delete a Team
+
+- **Team record** - The team is permanently removed from PagerDuty
+- **Team members** - Users are removed from the team but remain in PagerDuty
+- **Services** - Services associated with the team lose that association but are not deleted
+- **Schedules** - Schedules associated with the team lose that association but continue functioning
+- **Escalation policies** - Policies associated with the team remain functional
+
+### What is NOT Deleted
+
+- Users who were team members
+- Services owned by the team
+- Schedules assigned to the team
+- Incidents or historical data
+
+<Note>
+Deleting a team removes the organizational grouping but preserves all operational resources like services, schedules, and escalation policies.
+</Note>
+
+## Pre-Deletion Checklist
+
+Before deleting a team, consider:
+
+1. **Check team members** - Use `list_team_members` to see who will be affected
+2. **Review services** - Identify services associated with the team
+3. **Check schedules** - Verify schedules won't be impacted
+4. **Document purpose** - Confirm the team is no longer needed
+5. **Reassign resources** - Consider reassigning services/schedules to other teams first
+6. **Communication** - Notify team members about the deletion
+
+## Common Use Cases
+
+- **Team cleanup** - Remove obsolete or unused teams
+- **Reorganization** - Delete teams as part of organizational restructuring
+- **Project completion** - Remove temporary teams after project ends
+- **Consolidation** - Delete teams when merging with other teams
+- **Decommissioning** - Clean up after services are retired
+
+## Alternatives to Deletion
+
+Consider these alternatives before deleting:
+
+### Update Instead of Delete
+
+If the team's purpose changed, use [update_team](/tools/teams/update-team) to rename or update the description instead of deleting.
+
+### Remove Members
+
+If you want to depopulate a team but keep it for historical purposes, use [remove_team_member](/tools/teams/manage-members) to remove all members.
+
+### Archive Pattern
+
+Some organizations prefer to rename teams to "[ARCHIVED] Team Name" instead of deleting them, preserving historical associations.
+
+## Important Notes
+
+<Warning>
+You cannot delete a team that is the only team associated with critical services. Ensure services have alternative team assignments first.
+</Warning>
+
+<Tip>
+Before deleting, use `get_team` to review the team's current configuration and verify you're deleting the correct team.
+</Tip>
+
+## Recovery
+
+There is no built-in recovery mechanism for deleted teams. If you accidentally delete a team:
+
+1. Create a new team with the same name using [create_team](/tools/teams/create-team)
+2. Re-add members using [add_team_member](/tools/teams/manage-members)
+3. Re-associate services and schedules
+
+Note that the new team will have a different ID from the deleted one.
+
+## Related Tools
+
+<CardGroup cols={2}>
+  <Card title="get_team" icon="users" href="/tools/teams/get-team">
+    Verify team details before deletion
+  </Card>
+  <Card title="list_team_members" icon="user" href="/tools/teams/manage-members">
+    Check team membership
+  </Card>
+  <Card title="update_team" icon="pen" href="/tools/teams/update-team">
+    Alternative: Update team instead
+  </Card>
+  <Card title="list_teams" icon="list" href="/tools/teams/list-teams">
+    View all teams
+  </Card>
+</CardGroup>
+
+## See Also
+
+- [Write Mode Configuration](/configuration/write-mode) - How to enable write tools

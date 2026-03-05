@@ -1,0 +1,265 @@
+---
+title: "add_responders"
+description: "Request additional responders for an incident"
+---
+
+<Warning>
+**Tool Name:** `add_responders`
+
+**Category:** Incidents
+
+**Mode:** Write (requires `--enable-write-tools` flag and user-level token)
+</Warning>
+
+## Overview
+
+The `add_responders` tool allows you to request additional help on an incident by adding responders. You can add individual users or escalation policies. This sends notifications to the requested responders with an optional message.
+
+<Note>
+This tool requires:
+1. Write mode enabled (`--enable-write-tools` flag)
+2. User-level API token (not account-level)
+
+The authenticated user will be listed as the requester.
+</Note>
+
+## Parameters
+
+<ParamField path="incident_id" type="string" required>
+  The ID of the incident to add responders to.
+  
+  **Example:** `"Q1234567890ABCDE"`
+</ParamField>
+
+<ParamField path="message" type="string" required>
+  A message to include with the responder request explaining why they're needed.
+  
+  **Example:** `"Need database expertise to investigate query performance issues."`
+</ParamField>
+
+<ParamField path="responder_request_targets" type="list[ResponderRequestTarget]" required>
+  Array of users or escalation policies to request as responders.
+  
+  <ParamField path="responder_request_target" type="ResponderRequest" required>
+    Individual responder target.
+    
+    <ParamField path="id" type="string" required>
+      The ID of the user or escalation policy.
+      
+      **Example:** `"PXXXXXX"`
+    </ParamField>
+    
+    <ParamField path="type" type="string" required>
+      The type of target.
+      
+      **Allowed values:**
+      - `user_reference` - Request a specific user
+      - `escalation_policy_reference` - Request via escalation policy
+      
+      **Example:** `"user_reference"`
+    </ParamField>
+  </ParamField>
+</ParamField>
+
+## Usage Examples
+
+### Request a specific user
+
+```python
+{
+  "incident_id": "Q1234567890ABCDE",
+  "message": "Need help investigating database performance issues",
+  "responder_request_targets": [
+    {
+      "responder_request_target": {
+        "id": "PXXXXXX",
+        "type": "user_reference"
+      }
+    }
+  ]
+}
+```
+
+### Request multiple users
+
+```python
+{
+  "incident_id": "Q1234567890ABCDE",
+  "message": "Critical production issue - need database and network teams",
+  "responder_request_targets": [
+    {
+      "responder_request_target": {
+        "id": "PXXXXXX",
+        "type": "user_reference"
+      }
+    },
+    {
+      "responder_request_target": {
+        "id": "PYYYYYY",
+        "type": "user_reference"
+      }
+    }
+  ]
+}
+```
+
+### Request via escalation policy
+
+```python
+{
+  "incident_id": "Q1234567890ABCDE",
+  "message": "Need security team to review potential breach",
+  "responder_request_targets": [
+    {
+      "responder_request_target": {
+        "id": "PZZZZZZ",
+        "type": "escalation_policy_reference"
+      }
+    }
+  ]
+}
+```
+
+### Mix users and escalation policies
+
+```python
+{
+  "incident_id": "Q1234567890ABCDE",
+  "message": "Major outage - need all hands on deck",
+  "responder_request_targets": [
+    {
+      "responder_request_target": {
+        "id": "PUSER1",
+        "type": "user_reference"
+      }
+    },
+    {
+      "responder_request_target": {
+        "id": "PEPOLICY1",
+        "type": "escalation_policy_reference"
+      }
+    }
+  ]
+}
+```
+
+## Response Format
+
+Returns an `IncidentResponderRequestResponse` object with details about the responder request.
+
+<ResponseField name="requester" type="UserReference">
+  The user who requested the responders (the authenticated user).
+  
+  <ResponseField name="id" type="string">
+    Requester user ID
+  </ResponseField>
+  
+  <ResponseField name="type" type="string">
+    Always "user_reference"
+  </ResponseField>
+</ResponseField>
+
+<ResponseField name="requested_at" type="datetime">
+  When the responder request was made.
+</ResponseField>
+
+<ResponseField name="message" type="string" optional>
+  The message that was included with the request.
+</ResponseField>
+
+<ResponseField name="responder_request_targets" type="list[dict]">
+  The users or escalation policies that were requested to respond.
+</ResponseField>
+
+## Common Errors
+
+<Warning>
+**Account-level token used**
+
+If using an account-level API token:
+
+```
+Cannot add responders with account level auth. Please provide a user token.
+```
+
+**Solution:** Configure the MCP server with a user-level API token instead of an account-level token. See [API Authentication](/configuration/api-authentication).
+</Warning>
+
+<Warning>
+**Write mode not enabled**
+
+```
+Write operations are disabled. Enable with --enable-write-tools flag.
+```
+
+**Solution:** Restart the MCP server with the `--enable-write-tools` flag.
+</Warning>
+
+<Warning>
+**Incident not found**
+
+```
+404 Not Found: Incident not found
+```
+
+**Solution:** Verify the incident ID is correct and accessible.
+</Warning>
+
+<Warning>
+**Invalid responder ID**
+
+```
+400 Bad Request: User or escalation policy not found
+```
+
+**Solution:** Verify the user or escalation policy ID is correct using `list_users` or `list_escalation_policies`.
+</Warning>
+
+## Best Practices
+
+<Tip>
+**When to add responders:**
+
+- **Specialized expertise needed** - Issue requires domain knowledge you don't have
+- **Escalating severity** - Impact is larger than initially assessed
+- **Time-sensitive issues** - Need more hands to resolve faster
+- **Knowledge gap** - Need someone familiar with the affected system
+- **Spreading workload** - Original responder is overloaded
+
+**Writing effective responder messages:**
+
+- Be specific about why they're needed
+- Summarize the current situation
+- Indicate urgency level
+- Mention what's been tried already
+
+**Example message:**
+```
+"Database queries timing out. Tried restarting app servers without effect. 
+Need DBA help to investigate query performance and connection pool.
+Affecting 30% of production traffic."
+```
+</Tip>
+
+## Related Tools
+
+<CardGroup cols={2}>
+  <Card title="manage_incidents" icon="sliders" href="/tools/incidents/manage-incidents">
+    Update incident assignment
+  </Card>
+  <Card title="add_note_to_incident" icon="comment" href="/tools/incidents/add-note">
+    Document why responders were added
+  </Card>
+  <Card title="list_users" icon="users" href="/tools/users/list-users">
+    Find user IDs
+  </Card>
+  <Card title="list_escalation_policies" icon="arrow-up" href="/tools/escalation-policies/list-policies">
+    Find escalation policy IDs
+  </Card>
+</CardGroup>
+
+## Source Reference
+
+**Function:** `add_responders` in `pagerduty_mcp/tools/incidents.py:176`
+
+**Models:** `IncidentResponderRequest`, `IncidentResponderRequestResponse` in `pagerduty_mcp/models/incidents.py`

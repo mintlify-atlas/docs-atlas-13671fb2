@@ -1,0 +1,137 @@
+---
+title: "update_event_orchestration_router"
+description: "Update the router configuration for an event orchestration"
+---
+
+## Overview
+
+Updates the router configuration for a specific event orchestration. This allows you to modify routing rules, conditions, and actions.
+
+<Warning>
+This is a **write** tool that modifies your PagerDuty account. It requires the `--enable-write-tools` flag to be enabled.
+</Warning>
+
+## Parameters
+
+<ParamField path="orchestration_id" type="string" required>
+  The ID of the event orchestration to update
+</ParamField>
+
+<ParamField path="router_update" type="EventOrchestrationRouterUpdateRequest" required>
+  The updated router configuration
+  
+  <Expandable title="EventOrchestrationRouterUpdateRequest properties">
+    <ParamField path="orchestration_path" type="EventOrchestrationPathUpdateRequest" required>
+      The router path configuration to update
+      
+      <Expandable title="EventOrchestrationPathUpdateRequest properties">
+        <ParamField path="type" type="string" default="router">
+          Must be "router"
+        </ParamField>
+        
+        <ParamField path="sets" type="array" required>
+          Array containing exactly one rule set (the "start" set). Maximum length: 1.
+          
+          <Expandable title="EventOrchestrationRuleSet properties">
+            <ParamField path="id" type="string" default="start">
+              ID of the rule set. For routers, this is typically "start".
+            </ParamField>
+            
+            <ParamField path="rules" type="array" required>
+              List of routing rules to evaluate in order
+              
+              <Expandable title="EventOrchestrationRule properties">
+                <ParamField path="label" type="string">
+                  Description of this rule's purpose
+                </ParamField>
+                
+                <ParamField path="conditions" type="array" required>
+                  Conditions to match. Rule matches if ANY condition is true.
+                  
+                  <Expandable title="EventOrchestrationRuleCondition properties">
+                    <ParamField path="expression" type="string" required>
+                      PCL condition string
+                      
+                      Example: `event.summary matches part 'database error'`
+                    </ParamField>
+                  </Expandable>
+                </ParamField>
+                
+                <ParamField path="actions" type="EventOrchestrationRuleActions" required>
+                  Actions to take when rule matches
+                  
+                  <Expandable title="properties">
+                    <ParamField path="route_to" type="string">
+                      Service ID to route the event to
+                    </ParamField>
+                    
+                    <ParamField path="dynamic_route_to" type="object">
+                      Dynamically route based on event payload (AIOps only)
+                    </ParamField>
+                  </Expandable>
+                </ParamField>
+                
+                <ParamField path="disabled" type="boolean" default="false">
+                  Whether this rule is disabled
+                </ParamField>
+              </Expandable>
+            </ParamField>
+          </Expandable>
+        </ParamField>
+        
+        <ParamField path="catch_all" type="EventOrchestrationCatchAll" required>
+          Actions when no rules match
+          
+          <Expandable title="properties">
+            <ParamField path="actions" type="EventOrchestrationRuleActions" required>
+              Default routing actions
+            </ParamField>
+          </Expandable>
+        </ParamField>
+      </Expandable>
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+## Response
+
+Returns the updated `EventOrchestrationRouter` object with the new configuration.
+
+## Usage Examples
+
+### Update routing rules
+
+```
+Update the router for orchestration P1A2B3C to route database errors to service PABCDEF
+```
+
+### Disable a routing rule
+
+```
+Disable the first routing rule in orchestration P1A2B3C
+```
+
+### Change catch-all behavior
+
+```
+Update orchestration P1A2B3C to route unmatched events to the default service
+```
+
+<Note>
+This tool replaces the entire router configuration. Make sure to include all rules you want to keep. Consider using [append_event_orchestration_router_rule](/tools/event-orchestrations/append-rule) if you only want to add a new rule.
+</Note>
+
+## PCL Expression Examples
+
+PagerDuty Common Expression Language (PCL) is used for rule conditions:
+
+- `event.summary matches part 'database'` - Summary contains "database"
+- `event.severity equals 'critical'` - Severity is critical
+- `event.source matches regex 'prod-.*'` - Source matches pattern
+- `event.custom_details.region equals 'us-west-2'` - Custom field match
+
+## Related Tools
+
+- [get_event_orchestration_router](/tools/event-orchestrations/get-router) - Get current router configuration
+- [append_event_orchestration_router_rule](/tools/event-orchestrations/append-rule) - Add a rule without replacing all rules
+- [list_services](/tools/services) - List available services for routing

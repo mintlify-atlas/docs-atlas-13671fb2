@@ -1,0 +1,243 @@
+---
+title: "add_note_to_incident"
+description: "Add investigation notes and updates to an incident"
+---
+
+<Warning>
+**Tool Name:** `add_note_to_incident`
+
+**Category:** Incidents
+
+**Mode:** Write (requires `--enable-write-tools` flag)
+</Warning>
+
+## Overview
+
+The `add_note_to_incident` tool allows you to add notes to an incident to document investigation progress, findings, remediation steps, or any other relevant information. Notes are visible to all responders and stakeholders following the incident.
+
+<Note>
+This tool requires write mode to be enabled. See [Write Mode Configuration](/tools/read-vs-write) for details.
+</Note>
+
+## Parameters
+
+<ParamField path="incident_id" type="string" required>
+  The ID of the incident to add a note to.
+  
+  **Example:** `"Q1234567890ABCDE"`
+</ParamField>
+
+<ParamField path="note" type="string" required>
+  The note text to be added. Can include markdown formatting.
+  
+  **Example:** `"Identified root cause: Database connection pool exhausted due to long-running queries. Increasing pool size from 10 to 20."`
+</ParamField>
+
+## Usage Examples
+
+### Add an investigation update
+
+```python
+{
+  "incident_id": "Q1234567890ABCDE",
+  "note": "Investigation started. Checking application logs and database performance metrics."
+}
+```
+
+### Document root cause
+
+```python
+{
+  "incident_id": "Q1234567890ABCDE",
+  "note": "Root cause identified: Memory leak in caching layer causing OOM errors. Deployed hotfix v2.3.1 to production at 14:35 UTC."
+}
+```
+
+### Add remediation steps
+
+```python
+{
+  "incident_id": "Q1234567890ABCDE",
+  "note": "Remediation steps taken:\n1. Restarted affected services\n2. Cleared cache\n3. Verified traffic is routing correctly\n4. Monitoring for 15 minutes before resolving"
+}
+```
+
+### Add a status update
+
+```python
+{
+  "incident_id": "Q1234567890ABCDE",
+  "note": "Update: Error rate has dropped from 25% to 2%. Continuing to monitor."
+}
+```
+
+## Response Format
+
+Returns an `IncidentNote` object representing the created note.
+
+<ResponseField name="id" type="string" optional>
+  The unique ID of the note.
+</ResponseField>
+
+<ResponseField name="content" type="string">
+  The content of the note that was added.
+</ResponseField>
+
+<ResponseField name="created_at" type="datetime">
+  The timestamp when the note was created.
+</ResponseField>
+
+<ResponseField name="user" type="UserReference">
+  The user who created the note.
+  
+  <ResponseField name="id" type="string">
+    User ID
+  </ResponseField>
+  
+  <ResponseField name="type" type="string">
+    Always "user_reference"
+  </ResponseField>
+</ResponseField>
+
+## Common Errors
+
+<Warning>
+**Write mode not enabled**
+
+```
+Write operations are disabled. Enable with --enable-write-tools flag.
+```
+
+**Solution:** Restart the MCP server with the `--enable-write-tools` flag.
+</Warning>
+
+<Warning>
+**Incident not found**
+
+```
+404 Not Found: Incident not found
+```
+
+**Solution:** Verify the incident ID is correct and you have access to it.
+</Warning>
+
+<Warning>
+**Empty note**
+
+```
+Validation Error: note cannot be empty
+```
+
+**Solution:** Provide note text content.
+</Warning>
+
+## Best Practices
+
+<Tip>
+**Effective incident notes should:**
+
+- **Be timely** - Add notes as you investigate, not just at the end
+- **Be specific** - Include timestamps, metrics, and concrete observations
+- **Be actionable** - Document what you tried and what worked/didn't work
+- **Be clear** - Write for other responders who may not have full context
+- **Include evidence** - Link to logs, dashboards, or other resources
+- **Track decisions** - Document why certain approaches were chosen
+
+**Example of a good note:**
+```
+14:32 UTC - Identified high CPU usage on db-primary-01 (95% avg over 5min).
+Checked slow query log: UPDATE users query running for 300s+.
+Killed query PID 12345. CPU dropped to 40%.
+Next: Investigate why that query is slow.
+```
+</Tip>
+
+## Viewing Notes
+
+To view existing notes on an incident, use the `list_incident_notes` tool:
+
+```python
+{
+  "incident_id": "Q1234567890ABCDE"
+}
+```
+
+You can also include notes when retrieving an incident with `get_incident`:
+
+```python
+{
+  "incident_id": "Q1234567890ABCDE",
+  "include": ["notes"]
+}
+```
+
+## Related Tools
+
+<CardGroup cols={2}>
+  <Card title="list_incident_notes" icon="list" href="#list-incident-notes">
+    View all notes on an incident
+  </Card>
+  <Card title="get_incident" icon="magnifying-glass" href="/tools/incidents/get-incident">
+    Get incident details
+  </Card>
+  <Card title="manage_incidents" icon="sliders" href="/tools/incidents/manage-incidents">
+    Update incident status
+  </Card>
+  <Card title="add_responders" icon="user-plus" href="/tools/incidents/add-responders">
+    Request additional responders
+  </Card>
+</CardGroup>
+
+## list_incident_notes
+
+<Info>
+**Tool Name:** `list_incident_notes`
+
+**Category:** Incidents
+
+**Mode:** Read-only
+</Info>
+
+### Overview
+
+The `list_incident_notes` tool retrieves all notes that have been added to a specific incident.
+
+### Parameters
+
+<ParamField path="incident_id" type="string" required>
+  The ID of the incident to retrieve notes from.
+  
+  **Example:** `"Q1234567890ABCDE"`
+</ParamField>
+
+### Response Format
+
+Returns a `ListResponseModel[IncidentNote]` containing all notes.
+
+<ResponseField name="response" type="list[IncidentNote]">
+  List of notes for the incident.
+  
+  <ResponseField name="id" type="string" optional>
+    The unique ID of the note.
+  </ResponseField>
+  
+  <ResponseField name="content" type="string">
+    The content of the note.
+  </ResponseField>
+  
+  <ResponseField name="created_at" type="datetime">
+    When the note was created.
+  </ResponseField>
+  
+  <ResponseField name="user" type="UserReference">
+    The user who created the note.
+  </ResponseField>
+</ResponseField>
+
+## Source Reference
+
+**Functions:**
+- `add_note_to_incident` in `pagerduty_mcp/tools/incidents.py:223`
+- `list_incident_notes` in `pagerduty_mcp/tools/incidents.py:202`
+
+**Models:** `IncidentNote` in `pagerduty_mcp/models/incidents.py`

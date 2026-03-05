@@ -1,0 +1,379 @@
+---
+title: Event Orchestration Setup Guide
+description: Configure event orchestration to route, suppress, and enrich incoming events
+---
+
+This guide covers how to view and configure PagerDuty Event Orchestrations using the MCP server to automate event routing and processing.
+
+## Overview
+
+Event Orchestration is PagerDuty's powerful event processing engine that allows you to:
+- **Route** events to the appropriate services
+- **Suppress** noisy or low-priority alerts
+- **Enrich** events with additional context
+- **Transform** event data before creating incidents
+- **Deduplicate** related events
+
+Orchestrations operate at three levels:
+- **Router**: Initial entry point that routes events to services or global orchestration
+- **Global**: Account-level rules applied before service orchestration
+- **Service**: Service-specific rules for final event processing
+
+## Understanding Event Orchestrations
+
+### List All Orchestrations
+
+View all event orchestrations in your account:
+
+```
+List all event orchestrations
+```
+
+The [`list_event_orchestrations`](/tools/event-orchestrations/list-event-orchestrations) tool returns orchestration names, IDs, and integration details.
+
+### Get Orchestration Details
+
+Retrieve information about a specific orchestration:
+
+```
+Show details for orchestration ORCH123
+```
+
+The [`get_event_orchestration`](/tools/event-orchestrations/get-event-orchestration) tool provides:
+- Orchestration name and description
+- Integration key for sending events
+- Associated routes and services
+
+## Working with Router Configuration
+
+The router is the first layer that processes incoming events and determines where they should go.
+
+### View Router Rules
+
+Check the current router configuration:
+
+```
+Show router rules for orchestration ORCH123
+```
+
+The [`get_event_orchestration_router`](/tools/event-orchestrations/get-event-orchestration-router) tool displays:
+- Routing rules in priority order
+- Conditions that trigger each route
+- Destination services or catch-all behavior
+
+### Understanding Router Rules
+
+Each router rule consists of:
+
+**Conditions**: Criteria that must be met for the rule to apply
+- Field path (e.g., `event.source`, `event.severity`)
+- Operator (e.g., `equals`, `contains`, `matches`)
+- Expected value
+
+**Actions**: What happens when conditions match
+- **route_to**: Service ID to receive the event
+- **severity**: Set event severity
+- **event_action**: `trigger`, `resolve`, or `suppress`
+- **variables**: Extract data for use in later rules
+
+**Priority**: Rules are evaluated top-to-bottom; first match wins
+
+## Updating Router Configuration
+
+<Warning>
+Requires `--enable-write-tools` flag
+</Warning>
+
+### Replace Router Configuration
+
+Update the entire router configuration:
+
+```
+Update orchestration ORCH123 router with new routing rules
+```
+
+The [`update_event_orchestration_router`](/tools/event-orchestrations/update-event-orchestration-router) tool allows you to replace all router rules at once.
+
+<Warning>
+This replaces ALL existing rules. Use [`append_event_orchestration_router_rule`](/tools/event-orchestrations/append-event-orchestration-router-rule) to add individual rules without affecting existing ones.
+</Warning>
+
+### Add a New Routing Rule
+
+Append a routing rule to the end of the existing rules:
+
+```
+Add a routing rule to orchestration ORCH123: route events with source "monitoring-prod" to service SVC789
+```
+
+The [`append_event_orchestration_router_rule`](/tools/event-orchestrations/append-event-orchestration-router-rule) tool requires:
+
+**label**: Human-readable name for the rule
+
+**conditions**: Array of condition objects:
+```json
+{
+  "expression": "event.source equals 'monitoring-prod'"
+}
+```
+
+**actions**: What to do when conditions match:
+```json
+{
+  "route_to": "SVC789"
+}
+```
+
+<Tip>
+New rules are added to the end (lowest priority). To give a rule higher priority, use [`update_event_orchestration_router`](/tools/event-orchestrations/update-event-orchestration-router) to replace the entire configuration with rules in the desired order.
+</Tip>
+
+## Working with Global Orchestration
+
+Global orchestration rules apply to all events after routing but before service orchestration.
+
+### View Global Rules
+
+Check the global orchestration configuration:
+
+```
+Show global orchestration rules for ORCH123
+```
+
+The [`get_event_orchestration_global`](/tools/event-orchestrations/get-event-orchestration-global) tool returns:
+- Global processing rules
+- Enrichment and transformation logic
+- Suppression rules
+
+### Global Rule Use Cases
+
+**Enrichment**: Add context to all events
+- Attach runbook links
+- Add team contact information
+- Include environment details
+
+**Standardization**: Normalize event data
+- Convert severity levels
+- Standardize field names
+- Format timestamps
+
+**Filtering**: Suppress noise globally
+- Filter test environment alerts
+- Suppress known maintenance windows
+- Drop low-priority informational events
+
+## Working with Service Orchestration
+
+Service orchestration is the final processing stage before incident creation.
+
+### View Service Rules
+
+Check orchestration rules for a specific service:
+
+```
+Show service orchestration for service SVC123
+```
+
+The [`get_event_orchestration_service`](/tools/event-orchestrations/get-event-orchestration-service) tool displays service-specific rules.
+
+### Service Rule Capabilities
+
+**Severity Mapping**: Adjust incident urgency
+- Map alert severities to incident priorities
+- Elevate critical alerts to high urgency
+- Lower priority for known issues
+
+**Incident Deduplication**: Group related events
+- Use custom deduplication keys
+- Group by service component
+- Merge based on error patterns
+
+**Custom Fields**: Extract specific data
+- Parse log messages
+- Extract error codes
+- Identify affected customers
+
+**Automation**: Trigger workflows
+- Auto-resolve expected patterns
+- Suppress during maintenance
+- Route to specific escalation policies
+
+## Common Orchestration Patterns
+
+### Route by Source
+
+Direct events from different monitoring tools to appropriate services:
+
+```json
+{
+  "label": "Route Datadog to API Service",
+  "conditions": [
+    {"expression": "event.source equals 'datadog'"}
+  ],
+  "actions": {
+    "route_to": "SVC_API"
+  }
+}
+```
+
+### Route by Severity
+
+Send critical alerts to a dedicated service:
+
+```json
+{
+  "label": "Critical Alerts to Primary",
+  "conditions": [
+    {"expression": "event.severity equals 'critical'"}
+  ],
+  "actions": {
+    "route_to": "SVC_PRIMARY",
+    "severity": "critical"
+  }
+}
+```
+
+### Route by Environment
+
+Separate production from non-production:
+
+```json
+{
+  "label": "Production Alerts",
+  "conditions": [
+    {"expression": "event.custom_details.environment equals 'production'"}
+  ],
+  "actions": {
+    "route_to": "SVC_PROD"
+  }
+}
+```
+
+### Suppress Test Alerts
+
+Filter out test environment noise:
+
+```json
+{
+  "label": "Suppress Test Environment",
+  "conditions": [
+    {"expression": "event.source contains 'test'"}
+  ],
+  "actions": {
+    "event_action": "suppress"
+  }
+}
+```
+
+### Route by Service Name
+
+Parse service names from event data:
+
+```json
+{
+  "label": "Route by Service Tag",
+  "conditions": [
+    {"expression": "event.custom_details.service equals 'database'"}
+  ],
+  "actions": {
+    "route_to": "SVC_DATABASE"
+  }
+}
+```
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Order rules by specificity">
+    Place more specific rules at the top:
+    1. Exact matches and complex conditions
+    2. Partial matches and wildcards
+    3. Broad catches and defaults
+    4. Catch-all rule at the bottom
+  </Accordion>
+
+  <Accordion title="Use clear rule labels">
+    Name rules descriptively:
+    - ✅ "Route critical API alerts to primary service"
+    - ❌ "Rule 1"
+    
+    Good labels help with:
+    - Understanding routing logic
+    - Debugging issues
+    - Team collaboration
+  </Accordion>
+
+  <Accordion title="Test rules before deploying">
+    When adding new rules:
+    1. Review existing rules for conflicts
+    2. Consider rule priority order
+    3. Test with sample events
+    4. Monitor for unexpected routing
+  </Accordion>
+
+  <Accordion title="Keep router rules simple">
+    The router should do minimal processing:
+    - Route to the correct service
+    - Basic severity mapping
+    - Simple suppressions
+    
+    Save complex logic for service orchestration.
+  </Accordion>
+
+  <Accordion title="Document your orchestration logic">
+    Maintain documentation that explains:
+    - Why each rule exists
+    - What conditions trigger it
+    - Expected behavior
+    - Who to contact for changes
+  </Accordion>
+
+  <Accordion title="Use variables for reusable data">
+    Extract common values into variables:
+    - Reduces duplication
+    - Makes rules more maintainable
+    - Enables dynamic routing
+  </Accordion>
+
+  <Accordion title="Monitor orchestration effectiveness">
+    Regularly review:
+    - Suppression rates (too high = missing alerts)
+    - Routing accuracy (events reaching correct services)
+    - Rule match rates (unused rules = unnecessary complexity)
+  </Accordion>
+</AccordionGroup>
+
+## Troubleshooting
+
+### Events Not Routing Correctly
+
+1. **Check rule order**: Rules are evaluated top-to-bottom
+2. **Verify conditions**: Ensure condition syntax is correct
+3. **Test expressions**: Use sample event data to validate
+4. **Check service IDs**: Confirm route_to values are valid service IDs
+
+### Too Many Events Suppressed
+
+1. **Review suppression rules**: Check conditions aren't too broad
+2. **Check rule priority**: Ensure suppression rules are appropriately ordered
+3. **Validate conditions**: Confirm suppression conditions match intent
+
+### Events Not Being Enriched
+
+1. **Verify global orchestration**: Check global rules are configured
+2. **Check field paths**: Ensure custom field names are correct
+3. **Review service orchestration**: Verify service rules aren't overriding globals
+
+### Changes Not Taking Effect
+
+1. **Confirm update succeeded**: Check tool response for errors
+2. **Verify orchestration ID**: Ensure you're updating the correct orchestration
+3. **Test with new event**: Send a test event to verify routing
+4. **Check integration key**: Ensure events are sent to the correct integration
+
+## Related Resources
+
+- [Event Orchestration Tools Reference](/tools/event-orchestrations/overview)
+- [Services Tools](/tools/services/overview)
+- [Incident Management Guide](/guides/incident-management)
+- [PagerDuty Event Orchestration Docs](https://support.pagerduty.com/docs/event-orchestration)

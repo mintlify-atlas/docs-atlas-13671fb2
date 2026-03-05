@@ -1,0 +1,163 @@
+---
+title: "List Change Events"
+description: "Retrieve a list of change events with optional filtering"
+icon: "list"
+---
+
+## Overview
+
+The `list_change_events` tool retrieves all change events in your PagerDuty account. Change events represent changes to systems, services, and applications that can be correlated with incidents to provide context for troubleshooting.
+
+<Note>
+This is a **read-only** tool that does not modify any data in your PagerDuty account.
+</Note>
+
+## Parameters
+
+<ParamField path="limit" type="integer" optional default="25">
+  Maximum number of results to return. Must be between 1 and 100.
+  
+  Example: `50`
+</ParamField>
+
+<ParamField path="offset" type="integer" optional default="0">
+  The offset of the first record returned. Used for pagination.
+  
+  Example: `25`
+</ParamField>
+
+<ParamField path="total" type="boolean" optional>
+  Set to `true` to include the total count of change events in the response. By default, this is not included for faster response times.
+  
+  Example: `true`
+</ParamField>
+
+<ParamField path="team_ids" type="array" optional>
+  Filter change events by team IDs. Only returns change events related to the specified teams.
+  
+  Example: `["TEAM123", "TEAM456"]`
+</ParamField>
+
+<ParamField path="integration_ids" type="array" optional>
+  Filter change events by integration IDs. Only returns change events created by the specified integrations.
+  
+  Example: `["INT123", "INT456"]`
+</ParamField>
+
+<ParamField path="since" type="datetime" optional>
+  The start of the date range to search. Returns change events occurring after this timestamp.
+  
+  Example: `"2024-01-01T00:00:00Z"`
+</ParamField>
+
+<ParamField path="until" type="datetime" optional>
+  The end of the date range to search. Returns change events occurring before this timestamp.
+  
+  Example: `"2024-12-31T23:59:59Z"`
+</ParamField>
+
+## Response
+
+Returns a list of change event objects.
+
+<ResponseField name="response" type="array">
+  Array of change event objects
+  
+  <Expandable title="ChangeEvent Object">
+    <ResponseField name="id" type="string">
+      The unique identifier of the change event
+    </ResponseField>
+    
+    <ResponseField name="type" type="string">
+      Always returns `"change_event"`
+    </ResponseField>
+    
+    <ResponseField name="summary" type="string">
+      A brief text summary of the change event (maximum 1024 characters)
+    </ResponseField>
+    
+    <ResponseField name="timestamp" type="datetime">
+      The date and time when the change event occurred
+    </ResponseField>
+    
+    <ResponseField name="services" type="array">
+      An array of references to services associated with this change event
+    </ResponseField>
+    
+    <ResponseField name="integration" type="object">
+      Reference to the integration that created this change event
+    </ResponseField>
+    
+    <ResponseField name="routing_key" type="string">
+      The 32-character integration key used for routing the event
+    </ResponseField>
+    
+    <ResponseField name="source" type="string">
+      The unique location of the affected system (e.g., hostname, FQDN)
+    </ResponseField>
+    
+    <ResponseField name="links" type="array">
+      List of links with `href` and `text` properties providing additional context
+    </ResponseField>
+    
+    <ResponseField name="images" type="array">
+      List of images with `src`, `href`, and `alt` properties for visual context
+    </ResponseField>
+    
+    <ResponseField name="custom_details" type="object">
+      Additional details about the change event
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Example Usage
+
+<CodeGroup>
+```bash Natural Language
+"Show me all change events from the last week"
+```
+
+```bash Team Filtered
+"List change events for team TEAM123"
+```
+
+```bash Date Range
+"Get change events between January 1st and January 31st 2024"
+```
+</CodeGroup>
+
+## Use Cases
+
+- **Incident correlation** - Find change events that coincided with incidents
+- **Audit deployments** - Review all changes made to your systems
+- **Team visibility** - View changes made by specific teams
+- **Integration tracking** - See which integrations are creating change events
+- **Timeline analysis** - Build a timeline of system changes
+
+## Response Example
+
+```json
+{
+  "response": [
+    {
+      "id": "CHGEVT123",
+      "type": "change_event",
+      "summary": "Deployed v2.3.1 to production",
+      "timestamp": "2024-01-15T14:30:00Z",
+      "source": "deployment-pipeline",
+      "services": [
+        {
+          "id": "PSVC123",
+          "type": "service_reference"
+        }
+      ]
+    }
+  ]
+}
+```
+
+## Related Tools
+
+- [Get Change Event](/tools/change-events/get-change-event) - Retrieve a specific change event by ID
+- [List Service Change Events](/tools/services/list-service-change-events) - View change events for a specific service
+- [List Incident Change Events](/tools/incidents/list-incident-change-events) - View change events related to an incident

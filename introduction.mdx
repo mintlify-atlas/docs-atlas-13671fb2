@@ -1,0 +1,99 @@
+---
+title: Introduction
+description: 'Learn about the PagerDuty MCP Server and how it brings incident management capabilities to AI assistants'
+---
+
+## What is the Model Context Protocol?
+
+The [Model Context Protocol (MCP)](https://modelcontextprotocol.io) is an open protocol that enables seamless integration between AI applications and external data sources. It provides a standardized way for AI assistants like Claude, VS Code Copilot, and others to access tools and resources from third-party services.
+
+MCP servers act as bridges between AI assistants and external systems, exposing capabilities through a consistent interface that AI models can understand and use naturally in conversations.
+
+## What is PagerDuty MCP Server?
+
+PagerDuty MCP Server is the official MCP implementation from PagerDuty that brings powerful incident management capabilities directly into your AI-powered development workflow. It allows you to interact with your PagerDuty account using natural language through MCP-enabled clients.
+
+With the PagerDuty MCP Server, you can:
+
+- Query incidents, services, and on-call schedules without leaving your editor
+- Create and manage incidents through conversational commands
+- Monitor change events and their impact on your systems
+- Configure event orchestrations and alert grouping settings
+- Manage teams, users, and escalation policies
+- Update status pages and create schedule overrides
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="Read-Only Mode" icon="eye">
+    By default, the server operates in read-only mode, allowing you to safely query your PagerDuty data without risk of accidental modifications.
+  </Card>
+  
+  <Card title="Write Operations" icon="pen">
+    Enable write tools with the `--enable-write-tools` flag to create incidents, schedule overrides, manage teams, and more.
+  </Card>
+  
+  <Card title="60+ Tools" icon="toolbox">
+    Access over 60 specialized tools covering incidents, services, schedules, teams, event orchestrations, status pages, and more.
+  </Card>
+  
+  <Card title="Multi-Client Support" icon="window">
+    Works with VS Code, Cursor, Claude Desktop, and any MCP-compatible client.
+  </Card>
+</CardGroup>
+
+## Capabilities
+
+### Incident Management
+Create, update, and query incidents. Add notes and responders, manage incident status, and view related incidents and alerts.
+
+### On-Call & Scheduling
+Check who's on-call, view schedules, create overrides, and manage rotation schedules across your organization.
+
+### Event Orchestration
+Query and configure event orchestrations, including global and service-level configurations. Update routing rules to control how events flow through your system.
+
+### Services & Teams
+Manage services, teams, and team memberships. View escalation policies and user information.
+
+### Status Pages
+Create and update status page posts, manage maintenance windows, and communicate system status to stakeholders.
+
+### Change Events
+Track change events across your services and understand their relationship to incidents.
+
+## Who Should Use This?
+
+The PagerDuty MCP Server is ideal for:
+
+- **DevOps Engineers** who want to manage incidents and on-call schedules without context switching
+- **SREs** who need quick access to PagerDuty data while troubleshooting
+- **Engineering Managers** who want to query team assignments and incident metrics
+- **Platform Engineers** who are building automation workflows with AI assistance
+- **Anyone** who uses PagerDuty and wants to streamline their incident response workflow
+
+## Safety & Security
+
+<Warning>
+  The PagerDuty MCP Server requires a **User API Token** to authenticate with your PagerDuty account. This token has the same permissions as your user account, so keep it secure.
+</Warning>
+
+<Note>
+  Write operations are disabled by default. You must explicitly enable them with the `--enable-write-tools` flag, helping prevent accidental modifications to your PagerDuty data.
+</Note>
+
+The server uses stdio transport for secure communication with MCP clients. Your API token is passed via environment variables and never exposed in logs or command output.
+
+## Next Steps
+
+Ready to get started? Follow our [quickstart guide](/quickstart) to install and configure the PagerDuty MCP Server in minutes.
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Get up and running in 5 minutes
+  </Card>
+  
+  <Card title="Installation Guide" icon="download" href="/installation">
+    Detailed installation instructions
+  </Card>
+</CardGroup>

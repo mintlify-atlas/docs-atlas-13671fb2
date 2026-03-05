@@ -1,0 +1,139 @@
+---
+title: "create_schedule"
+description: "Create a new on-call schedule"
+---
+
+## Overview
+
+Creates a new on-call schedule with one or more schedule layers defining the rotation pattern.
+
+<Warning>
+This is a **write tool** that creates new resources in your PagerDuty account. It requires the `--enable-write-tools` flag to be enabled.
+</Warning>
+
+## Parameters
+
+<ParamField body="name" type="string" required>
+  The name of the schedule. Should be descriptive and unique.
+</ParamField>
+
+<ParamField body="time_zone" type="string" required>
+  The time zone for the schedule using IANA format (e.g., "America/New_York", "Europe/London", "UTC").
+</ParamField>
+
+<ParamField body="description" type="string">
+  Optional description explaining the purpose of the schedule.
+</ParamField>
+
+<ParamField body="schedule_layers" type="array" required>
+  Array of schedule layers that define the rotation. Each layer requires:
+  
+  **Required fields:**
+  - `name` (string) - Name identifying the layer
+  - `start` (datetime) - When the layer starts (ISO 8601 format)
+  - `rotation_virtual_start` (datetime) - Effective start time for rotation calculation
+  - `rotation_turn_length_seconds` (integer) - Duration of each on-call shift in seconds
+  - `users` (array) - Ordered list of users in the rotation. Each user needs:
+    - `user.id` - The PagerDuty user ID
+  
+  **Optional fields:**
+  - `end` (datetime) - When the layer ends (null for ongoing)
+  - `restrictions` (array) - Time restrictions limiting when the layer is active:
+    - `type` - "daily_restriction" or "weekly_restriction"
+    - `start_time_of_day` - Time when restriction starts (HH:MM:SS)
+    - `duration_seconds` - How long the restriction lasts
+    - `start_day_of_week` - Day of week (1=Monday, 7=Sunday, ISO-8601)
+</ParamField>
+
+## Response
+
+Returns the created schedule object with all fields populated, including the assigned schedule ID.
+
+## Example Usage
+
+### Create a basic weekly rotation
+```
+Create a schedule called "Backend On-Call" with a weekly rotation 
+starting Monday at 9am Eastern time with users Alice, Bob, and Carol
+```
+
+### Create with business hours restriction
+```
+Create a schedule named "Business Hours Support" for weekdays 9-5 EST 
+with users from the support team rotating daily
+```
+
+### Create with multiple layers
+```
+Create a schedule with two layers:
+- Primary layer: weekly rotation with Alice, Bob, Carol
+- Secondary layer: weekend-only coverage with Dave, Eve
+```
+
+## Understanding Rotation Parameters
+
+### rotation_turn_length_seconds
+
+Defines how long each user stays on-call:
+- 1 day: `86400`
+- 1 week: `604800`
+- 2 weeks: `1209600`
+- 1 month (30 days): `2592000`
+
+### rotation_virtual_start
+
+The "virtual start" determines where in the rotation sequence to begin. This can be set before the actual layer start date to align with existing rotation patterns.
+
+For example, if you want Bob to be first on-call when the schedule starts, you might set the virtual start to a date that puts Bob in the first position.
+
+### Restrictions
+
+Restrictions limit when a layer is active:
+- **Daily restrictions** - Same time window every day (e.g., 9am-5pm)
+- **Weekly restrictions** - Specific days and times (e.g., Monday-Friday 9am-5pm)
+
+Without restrictions, the layer is active 24/7.
+
+## Common Use Cases
+
+- **New team setup** - Create on-call schedules for new teams
+- **Service coverage** - Set up dedicated schedules for different services
+- **Business hours support** - Create schedules with time restrictions
+- **Follow-the-sun** - Set up schedules for global coverage
+- **Seasonal schedules** - Create temporary schedules with end dates
+
+## Important Notes
+
+<Note>
+**Each schedule layer requires a `name` field.** This is used to identify the layer within the schedule.
+</Note>
+
+<Tip>
+Start with a simple single-layer schedule and test it before adding complex restrictions or multiple layers.
+</Tip>
+
+<Warning>
+Make sure user IDs are correct before creating the schedule. Invalid user IDs will cause the creation to fail.
+</Warning>
+
+## Related Tools
+
+<CardGroup cols={2}>
+  <Card title="list_schedules" icon="list" href="/tools/schedules/list-schedules">
+    View all schedules
+  </Card>
+  <Card title="get_schedule" icon="calendar" href="/tools/schedules/get-schedule">
+    Get schedule details
+  </Card>
+  <Card title="update_schedule" icon="pen" href="/tools/schedules/update-schedule">
+    Modify an existing schedule
+  </Card>
+  <Card title="create_override" icon="user-clock" href="/tools/schedules/create-override">
+    Create temporary overrides
+  </Card>
+</CardGroup>
+
+## See Also
+
+- [Write Mode Configuration](/configuration/write-mode) - How to enable write tools
+- [On-Call Management Guide](/guides/on-call-management) - Best practices for schedules

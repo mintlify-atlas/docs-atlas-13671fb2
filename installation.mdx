@@ -1,0 +1,417 @@
+---
+title: Installation
+description: 'Complete installation guide for the PagerDuty MCP Server'
+---
+
+This guide covers all methods for installing the PagerDuty MCP Server, from the simplest one-command installation to running from source.
+
+## System Requirements
+
+Before installing, ensure your system meets these requirements:
+
+- **Python**: Version 3.12.x (Python 3.12.0 is recommended)
+- **Operating System**: Linux, macOS, or Windows
+- **MCP Client**: VS Code, Cursor, Claude Desktop, or any MCP-compatible client
+
+<Note>
+  The PagerDuty MCP Server specifically requires Python 3.12. Other versions may not work correctly.
+</Note>
+
+## Installation Methods
+
+### Method 1: Using uvx (Recommended)
+
+The easiest way to use the PagerDuty MCP Server is via `uvx`, which automatically manages dependencies and the Python environment.
+
+<Steps>
+  <Step title="Install uv">
+    First, install `uv` if you don't have it already:
+    
+    **macOS/Linux:**
+    ```bash
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+    ```
+    
+    **Windows:**
+    ```powershell
+    powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
+    ```
+    
+    For more installation options, see the [official uv documentation](https://docs.astral.sh/uv/getting-started/installation/).
+  </Step>
+  
+  <Step title="Run the server">
+    No additional installation needed! Just run:
+    
+    ```bash
+    uvx pagerduty-mcp
+    ```
+    
+    The `uvx` command automatically downloads and runs the latest version of the PagerDuty MCP Server.
+  </Step>
+</Steps>
+
+<Tip>
+  This is the recommended method for most users. The `uvx` approach is used in all MCP client configurations throughout this documentation.
+</Tip>
+
+### Method 2: Using pip
+
+If you prefer traditional Python package installation, you can install via pip.
+
+<Steps>
+  <Step title="Ensure Python 3.12 is active">
+    Verify you're using Python 3.12:
+    
+    ```bash
+    python --version
+    ```
+    
+    Should output: `Python 3.12.x`
+  </Step>
+  
+  <Step title="Install the package">
+    Install the PagerDuty MCP Server:
+    
+    ```bash
+    pip install pagerduty-mcp
+    ```
+  </Step>
+  
+  <Step title="Run the server">
+    After installation, you can run the server:
+    
+    ```bash
+    pagerduty-mcp
+    ```
+  </Step>
+</Steps>
+
+<Warning>
+  When using pip installation, you'll need to ensure the package is installed in an environment accessible to your MCP client. Virtual environments may require additional configuration.
+</Warning>
+
+### Method 3: From Source
+
+For development or if you want to run the latest code, you can install from source.
+
+<Steps>
+  <Step title="Install prerequisites">
+    Install [asdf-vm](https://asdf-vm.com/) and [uv](https://github.com/astral-sh/uv) if not already installed.
+  </Step>
+  
+  <Step title="Clone the repository">
+    ```bash
+    git clone https://github.com/pagerduty/pagerduty-mcp-server.git
+    cd pagerduty-mcp-server
+    ```
+  </Step>
+  
+  <Step title="Install asdf plugins">
+    ```bash
+    asdf plugin add python
+    asdf plugin add nodejs https://github.com/asdf-vm/asdf-nodejs.git
+    asdf plugin add uv
+    ```
+  </Step>
+  
+  <Step title="Install tool versions">
+    Install the correct versions of Python and other tools:
+    
+    ```bash
+    asdf install
+    ```
+  </Step>
+  
+  <Step title="Create virtual environment and install dependencies">
+    ```bash
+    uv sync
+    ```
+  </Step>
+  
+  <Step title="Ensure uv is available globally">
+    Make sure `uv` is available globally so it can be invoked from your MCP client:
+    
+    Follow the [official uv installation guide](https://docs.astral.sh/uv/getting-started/installation/) to install it globally.
+    
+    <Tip>
+      You may need to restart your terminal and/or your MCP client for the changes to take effect.
+    </Tip>
+  </Step>
+</Steps>
+
+#### Running from Source
+
+When running from source, your MCP client configuration needs to be updated to use `uv run` instead of `uvx`:
+
+```json settings.json
+{
+    "mcp": {
+        "servers": {
+            "pagerduty-mcp": { 
+                "type": "stdio",
+                "command": "uv",
+                "args": [
+                    "run",
+                    "--directory",
+                    "/path/to/pagerduty-mcp-server",
+                    "python",
+                    "-m",
+                    "pagerduty_mcp",
+                    "--enable-write-tools"
+                ],
+                "env": {
+                    "PAGERDUTY_USER_API_KEY": "${input:pagerduty-api-key}",
+                    "PAGERDUTY_API_HOST": "https://api.pagerduty.com"
+                }
+            }
+        }
+    }
+}
+```
+
+Replace `/path/to/pagerduty-mcp-server` with the full path to your cloned repository (e.g., `/Users/yourname/code/pagerduty-mcp-server`).
+
+### Method 4: Using Docker
+
+You can also run the PagerDuty MCP Server in a Docker container for an isolated and portable deployment.
+
+<Steps>
+  <Step title="Ensure Docker is installed">
+    Make sure you have Docker installed on your system.
+  </Step>
+  
+  <Step title="Build the Docker image">
+    ```bash
+    git clone https://github.com/pagerduty/pagerduty-mcp-server.git
+    cd pagerduty-mcp-server
+    docker build -t pagerduty-mcp:latest .
+    ```
+  </Step>
+  
+  <Step title="Run the container">
+    **Read-only mode (default):**
+    ```bash
+    docker run -i --rm \
+      -e PAGERDUTY_USER_API_KEY="your-api-key-here" \
+      pagerduty-mcp:latest
+    ```
+    
+    **With write tools enabled:**
+    ```bash
+    docker run -i --rm \
+      -e PAGERDUTY_USER_API_KEY="your-api-key-here" \
+      pagerduty-mcp:latest --enable-write-tools
+    ```
+    
+    **For EU region:**
+    ```bash
+    docker run -i --rm \
+      -e PAGERDUTY_USER_API_KEY="your-api-key-here" \
+      -e PAGERDUTY_API_HOST="https://api.eu.pagerduty.com" \
+      pagerduty-mcp:latest
+    ```
+  </Step>
+</Steps>
+
+#### Using Docker with MCP Clients
+
+To configure an MCP client to use the Docker container:
+
+```json
+{
+  "mcpServers": {
+    "pagerduty-mcp": {
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "--rm",
+        "-e",
+        "PAGERDUTY_USER_API_KEY=your-api-key-here",
+        "pagerduty-mcp:latest"
+      ]
+    }
+  }
+}
+```
+
+<Note>
+  The Docker container uses stdio transport, making it compatible with MCP clients that expect standard input/output communication.
+</Note>
+
+## Verifying Installation
+
+To verify that the PagerDuty MCP Server is installed correctly:
+
+### Check the Version
+
+Run the server with the `--help` flag to see available options:
+
+```bash
+uvx pagerduty-mcp --help
+```
+
+You should see output showing the available commands and options.
+
+### Test Server Startup
+
+Set your API key as an environment variable and test the server:
+
+```bash
+export PAGERDUTY_USER_API_KEY="your-api-key-here"
+uvx pagerduty-mcp
+```
+
+You should see a message indicating the server has started:
+
+```
+Starting PagerDuty MCP Server. Use the --enable-write-tools flag to enable write tools.
+```
+
+<Tip>
+  Press `Ctrl+C` to stop the test server.
+</Tip>
+
+### Test with an MCP Client
+
+The best way to verify everything is working is to configure an MCP client (like VS Code) and try a simple query. See the [Quickstart Guide](/quickstart) for step-by-step instructions.
+
+## Troubleshooting
+
+### Python Version Issues
+
+**Problem:** Error message about Python version mismatch.
+
+**Solution:** Ensure you're using Python 3.12.x:
+
+```bash
+python --version
+```
+
+If you're using the wrong version, install Python 3.12 using your system's package manager or [pyenv](https://github.com/pyenv/pyenv).
+
+### uv Not Found
+
+**Problem:** `uvx: command not found` or `uv: command not found`
+
+**Solution:** Install `uv` globally following the [official installation guide](https://docs.astral.sh/uv/getting-started/installation/). After installation, restart your terminal and MCP client.
+
+### API Key Issues
+
+**Problem:** Authentication errors or "API key not found" messages.
+
+**Solution:** 
+- Verify your API key is correctly set in the MCP client configuration
+- Ensure there are no extra spaces or quotes around the key
+- Generate a new API key from your PagerDuty user settings if needed
+- Check that the key has not expired
+
+### EU Region Users
+
+**Problem:** API calls failing with EU region accounts.
+
+**Solution:** Update the `PAGERDUTY_API_HOST` environment variable to `https://api.eu.pagerduty.com` in your MCP client configuration.
+
+### Server Not Starting in MCP Client
+
+**Problem:** The server doesn't appear in the MCP client or won't start.
+
+**Solution:**
+1. Check that MCP is enabled in your client settings
+2. Verify the configuration syntax in your settings.json
+3. Restart the MCP client completely
+4. Check the MCP client logs for error messages
+5. Try restarting the server from the command palette (`MCP: List Servers`)
+
+### Permission Errors
+
+**Problem:** Permission denied errors when running the server.
+
+**Solution:**
+- Ensure you have write permissions in your Python environment
+- If using a virtual environment, activate it before installing
+- On Unix systems, avoid using `sudo` with pip - use virtual environments instead
+
+### Import Errors
+
+**Problem:** `ModuleNotFoundError` or import errors when running the server.
+
+**Solution:**
+- Reinstall the package: `pip install --force-reinstall pagerduty-mcp`
+- If using `uvx`, clear the cache: `rm -rf ~/.local/share/uv`
+- Ensure you're using Python 3.12 and not another version
+
+## Configuration Options
+
+The PagerDuty MCP Server accepts the following configuration options:
+
+### Command-Line Flags
+
+- `--enable-write-tools`: Enable write operations (create, update, delete). Default: disabled
+
+### Environment Variables
+
+- `PAGERDUTY_USER_API_KEY` (required): Your PagerDuty User API Token
+- `PAGERDUTY_API_HOST` (optional): PagerDuty API endpoint. Default: `https://api.pagerduty.com`
+  - For EU accounts, use: `https://api.eu.pagerduty.com`
+
+## Upgrading
+
+### Upgrading uvx Installation
+
+The `uvx` command automatically uses the latest version. To force an upgrade:
+
+```bash
+uvx --refresh pagerduty-mcp
+```
+
+### Upgrading pip Installation
+
+Upgrade to the latest version:
+
+```bash
+pip install --upgrade pagerduty-mcp
+```
+
+### Upgrading Source Installation
+
+Pull the latest changes and reinstall:
+
+```bash
+cd pagerduty-mcp-server
+git pull
+uv sync
+```
+
+### Upgrading Docker Installation
+
+Rebuild the Docker image:
+
+```bash
+cd pagerduty-mcp-server
+git pull
+docker build -t pagerduty-mcp:latest .
+```
+
+## Next Steps
+
+Now that you have the PagerDuty MCP Server installed:
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Follow the quickstart guide to configure your first client
+  </Card>
+  
+  <Card title="Configure Clients" icon="window" href="/clients/vscode">
+    Learn how to configure different MCP clients
+  </Card>
+  
+  <Card title="Available Tools" icon="toolbox" href="/tools/overview">
+    Explore all available tools and capabilities
+  </Card>
+  
+  <Card title="Usage Guides" icon="book" href="/guides/incident-management">
+    Learn common workflows and best practices
+  </Card>
+</CardGroup>

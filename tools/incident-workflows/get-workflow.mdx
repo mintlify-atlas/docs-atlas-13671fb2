@@ -1,0 +1,197 @@
+---
+title: "Get Incident Workflow"
+description: "Retrieve details of a specific incident workflow by ID"
+icon: "diagram-project"
+---
+
+## Overview
+
+The `get_incident_workflow` tool retrieves detailed information about a specific incident workflow, including its configuration, steps, and team associations.
+
+<Note>
+This is a **read-only** tool that does not modify any data in your PagerDuty account.
+</Note>
+
+## Parameters
+
+<ParamField path="workflow_id" type="string" required>
+  The unique identifier of the incident workflow to retrieve.
+  
+  Example: `"PZYX123"`
+</ParamField>
+
+## Response
+
+Returns a detailed incident workflow object.
+
+<ResponseField name="id" type="string">
+  The unique identifier of the incident workflow
+</ResponseField>
+
+<ResponseField name="type" type="string">
+  Always returns `"incident_workflow"`
+</ResponseField>
+
+<ResponseField name="name" type="string">
+  A descriptive name for the incident workflow
+</ResponseField>
+
+<ResponseField name="description" type="string">
+  A description of what the incident workflow does
+</ResponseField>
+
+<ResponseField name="is_enabled" type="boolean">
+  Indicates whether the incident workflow is currently enabled. Disabled workflows will not execute.
+</ResponseField>
+
+<ResponseField name="team" type="object">
+  Team reference. If specified, workflow edit permissions are scoped to members of this team.
+  
+  <Expandable title="Team Reference">
+    <ResponseField name="id" type="string">
+      The team ID
+    </ResponseField>
+    
+    <ResponseField name="type" type="string">
+      Always returns `"team_reference"`
+    </ResponseField>
+    
+    <ResponseField name="summary" type="string">
+      A short description of the team
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="steps" type="array">
+  The ordered list of steps that execute sequentially as part of the workflow.
+  
+  <Expandable title="Step Object">
+    <ResponseField name="id" type="string">
+      Unique identifier for the step
+    </ResponseField>
+    
+    <ResponseField name="type" type="string">
+      Always returns `"step"`
+    </ResponseField>
+    
+    <ResponseField name="name" type="string">
+      A descriptive name for the step
+    </ResponseField>
+    
+    <ResponseField name="description" type="string">
+      A description of the action performed by the step
+    </ResponseField>
+    
+    <ResponseField name="action_configuration" type="object">
+      Configuration of the automated action executed by this step
+      
+      <Expandable title="Action Configuration">
+        <ResponseField name="action_id" type="string">
+          The identifier of the action to execute
+        </ResponseField>
+        
+        <ResponseField name="description" type="string">
+          Description of the action
+        </ResponseField>
+        
+        <ResponseField name="inputs" type="array">
+          An unordered list of standard inputs used to configure the action
+        </ResponseField>
+        
+        <ResponseField name="inline_steps_inputs" type="array">
+          Specialized inputs used to configure a workflow-within-a-workflow
+        </ResponseField>
+        
+        <ResponseField name="outputs" type="array">
+          An unordered list of outputs this action produces
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+    
+    <ResponseField name="summary" type="string">
+      A short-form, server-generated description
+    </ResponseField>
+    
+    <ResponseField name="self" type="string">
+      The API URL at which this step is accessible
+    </ResponseField>
+    
+    <ResponseField name="html_url" type="string">
+      The URL at which this step is accessible in the PagerDuty web UI
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="summary" type="string">
+  A short-form, server-generated description
+</ResponseField>
+
+<ResponseField name="self" type="string">
+  The API URL at which this workflow is accessible
+</ResponseField>
+
+<ResponseField name="html_url" type="string">
+  The URL at which this workflow is accessible in the PagerDuty web UI
+</ResponseField>
+
+<ResponseField name="created_at" type="datetime">
+  The timestamp this incident workflow was created
+</ResponseField>
+
+## Example Usage
+
+<CodeGroup>
+```bash Natural Language
+"Show me the details of workflow PZYX123"
+```
+
+```bash Get by Name
+"Get the details of the 'Major Incident Response' workflow"
+```
+
+```bash Check Steps
+"What steps are in workflow PZYX123?"
+```
+</CodeGroup>
+
+## Use Cases
+
+- **Review workflow configuration** - Examine the complete setup of a workflow
+- **Understand workflow steps** - See what actions will be performed when the workflow executes
+- **Verify team permissions** - Check which team can edit this workflow
+- **Audit automation** - Review the specific actions and inputs configured
+- **Debug workflows** - Troubleshoot workflow behavior by examining configuration
+
+## Response Example
+
+```json
+{
+  "id": "PZYX123",
+  "type": "incident_workflow",
+  "name": "Major Incident Response",
+  "description": "Automated workflow for major incident escalation",
+  "is_enabled": true,
+  "team": {
+    "id": "PTEAM1",
+    "type": "team_reference",
+    "summary": "Platform Team"
+  },
+  "steps": [
+    {
+      "id": "STEP1",
+      "type": "step",
+      "name": "Notify stakeholders",
+      "action_configuration": {
+        "action_id": "send_notification"
+      }
+    }
+  ],
+  "created_at": "2024-01-15T10:30:00Z"
+}
+```
+
+## Related Tools
+
+- [List Incident Workflows](/tools/incident-workflows/list-workflows) - Retrieve all workflows
+- [Start Incident Workflow](/tools/incident-workflows/start-workflow) - Manually trigger a workflow
+- [Get Incident](/tools/incidents/get-incident) - View incident details

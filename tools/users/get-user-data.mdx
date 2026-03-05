@@ -1,0 +1,109 @@
+---
+title: "get_user_data"
+description: "Get the current user's data"
+---
+
+## Overview
+
+Retrieves information about the currently authenticated user (the user associated with the API token being used).
+
+<Info>
+This is a **read-only** tool that queries your PagerDuty account without making any changes.
+</Info>
+
+## Parameters
+
+This tool takes no parameters. It automatically retrieves data for the user associated with the API token.
+
+## Response
+
+Returns a `User` object:
+
+<ResponseField name="id" type="string">
+  The ID of the user
+</ResponseField>
+
+<ResponseField name="summary" type="string">
+  A short-form, server-generated string providing succinct information about the user
+</ResponseField>
+
+<ResponseField name="name" type="string">
+  The name of the user
+</ResponseField>
+
+<ResponseField name="email" type="string">
+  The email address of the user
+</ResponseField>
+
+<ResponseField name="role" type="string">
+  The user's role in PagerDuty. Possible values:
+  - `admin` - Full administrative access
+  - `limited_user` - Limited user access
+  - `observer` - Read-only observer access
+  - `owner` - Account owner
+  - `read_only_user` - Read-only user access
+  - `restricted_access` - Restricted access
+  - `read_only_limited_user` - Read-only limited user
+  - `user` - Standard user access
+</ResponseField>
+
+<ResponseField name="teams" type="array">
+  List of teams the user belongs to
+  
+  <Expandable title="TeamReference properties">
+    <ResponseField name="id" type="string">
+      Team ID
+    </ResponseField>
+    
+    <ResponseField name="type" type="string">
+      Always "team_reference"
+    </ResponseField>
+    
+    <ResponseField name="summary" type="string">
+      Team name
+    </ResponseField>
+    
+    <ResponseField name="self" type="string">
+      API URL for the team
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="type" type="string">
+  Always "user"
+</ResponseField>
+
+## Usage Examples
+
+### Get your own user information
+
+```
+Who am I logged in as?
+```
+
+```
+Show me my user information
+```
+
+```
+What teams am I on?
+```
+
+### Check your role
+
+```
+What role do I have in PagerDuty?
+```
+
+## Use Cases
+
+- **Identity verification** - Confirm which user account the API token belongs to
+- **Permission checking** - Verify your role before attempting operations
+- **Team membership** - See which teams you belong to
+- **Troubleshooting** - Debug permission issues by checking user details
+
+## Related Tools
+
+- [list_users](/tools/users/list-users) - List all users in the account
+- [list_teams](/tools/teams) - List all teams
+- [list_team_members](/tools/teams) - List members of a specific team

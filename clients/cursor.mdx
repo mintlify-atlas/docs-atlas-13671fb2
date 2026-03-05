@@ -1,0 +1,103 @@
+---
+title: Cursor Integration
+description: Configure the PagerDuty MCP Server in Cursor
+---
+
+This guide walks you through integrating the PagerDuty MCP Server with Cursor.
+
+## Setup
+
+<Steps>
+  <Step title="Open Cursor Settings">
+    Navigate to Cursor Settings > Tools > Add MCP, or use the keyboard shortcut:
+    - **Mac:** `Cmd+,`
+    - **Windows/Linux:** `Ctrl+,`
+  </Step>
+
+  <Step title="Add MCP Server Configuration">
+    Add the following configuration to your `settings.json`:
+
+    ```json
+    {
+      "mcpServers": {
+        "pagerduty-mcp": {
+          "type": "stdio",
+          "command": "uvx",
+          "args": [
+            "pagerduty-mcp",
+            "--enable-write-tools"
+            // This flag enables write operations on the MCP Server enabling you to creating incidents, schedule overrides and much more
+          ],
+          "env": {
+            "PAGERDUTY_USER_API_KEY": "${input:pagerduty-api-key}"
+          }
+        }
+      }
+    }
+    ```
+
+    The `--enable-write-tools` flag enables write operations, allowing you to create incidents, schedule overrides, and more.
+  </Step>
+
+  <Step title="Configure API Key">
+    When you first use the MCP server, Cursor will prompt you to enter your PagerDuty API key. The `${input:pagerduty-api-key}` variable ensures your key is stored securely.
+  </Step>
+
+  <Step title="Test the Integration">
+    Test the integration by asking Cursor to interact with PagerDuty:
+    - "Show me my latest PagerDuty incidents"
+    - "List my event orchestrations"
+    - "Create a test incident"
+  </Step>
+</Steps>
+
+## Configuration Details
+
+### Configuration File Location
+
+The Cursor MCP configuration is stored in your `settings.json` file, which can be accessed through the Cursor settings interface.
+
+### Environment Variables
+
+- **PAGERDUTY_USER_API_KEY**: Your PagerDuty User API Token. Use the `${input:pagerduty-api-key}` variable for secure storage.
+- **PAGERDUTY_API_HOST** (optional): Set to `https://api.eu.pagerduty.com` if your account is in the EU region.
+
+## Troubleshooting
+
+### Server Not Starting
+
+If the MCP server doesn't start:
+
+1. Verify that `uvx` is installed and available in your PATH
+2. Check that your PagerDuty API key is valid
+3. Review the Cursor console for error messages
+
+### API Key Not Prompting
+
+If Cursor doesn't prompt for your API key:
+
+1. Ensure you're using the `${input:pagerduty-api-key}` variable syntax
+2. Try restarting Cursor
+3. Check the Cursor settings to see if the input was already configured
+
+### Connection Issues
+
+If you're experiencing connection issues:
+
+1. Verify your PagerDuty API key has the necessary permissions
+2. If you're in the EU region, add the `PAGERDUTY_API_HOST` environment variable:
+   ```json
+   "env": {
+     "PAGERDUTY_USER_API_KEY": "${input:pagerduty-api-key}",
+     "PAGERDUTY_API_HOST": "https://api.eu.pagerduty.com"
+   }
+   ```
+3. Check your network connection and firewall settings
+
+### Write Operations Not Working
+
+If you can read data but not create or modify resources:
+
+1. Ensure the `--enable-write-tools` flag is included in the `args` array
+2. Verify your API key has write permissions in PagerDuty
+3. Restart Cursor after making configuration changes

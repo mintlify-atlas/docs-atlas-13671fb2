@@ -1,0 +1,218 @@
+---
+title: "Create Alert Grouping Setting"
+description: "Create a new alert grouping setting to control how alerts are grouped"
+icon: "plus"
+---
+
+## Overview
+
+The `create_alert_grouping_setting` tool creates a new alert grouping setting that defines how alerts should be automatically grouped into incidents for specific services.
+
+<Warning>
+This is a **write** tool that creates a new configuration in your PagerDuty account. You must enable write tools with the `--enable-write-tools` flag to use this tool.
+</Warning>
+
+## Parameters
+
+<ParamField path="name" type="string" optional>
+  A short-form name for labeling the alert grouping setting.
+  
+  Example: `"Production API Grouping"`
+</ParamField>
+
+<ParamField path="description" type="string" optional>
+  A description providing more information about the alert grouping setting.
+  
+  Example: `"Groups API alerts by component and severity"`
+</ParamField>
+
+<ParamField path="type" type="string" required>
+  The type of alert grouping configuration. Must be one of:
+  - `content_based` - Group by matching field values
+  - `content_based_intelligent` - Intelligent grouping with field matching
+  - `intelligent` - AI-powered intelligent grouping
+  - `time` - Group alerts within a time window
+  
+  Example: `"content_based"`
+</ParamField>
+
+<ParamField path="config" type="object" required>
+  The configuration for the alert grouping setting. Structure varies by type.
+  
+  <Expandable title="Content-Based Config">
+    <ParamField path="aggregate" type="string" required>
+      Whether alerts should be grouped if "all" or "any" specified fields match.
+      
+      Example: `"all"`
+    </ParamField>
+    
+    <ParamField path="fields" type="array" required>
+      Array of field names to group on. Alerts will be grouped when these fields match.
+      
+      Example: `["component", "severity"]`
+    </ParamField>
+    
+    <ParamField path="time_window" type="integer" required>
+      Time window in seconds (300-86400). Set to 0 to use the recommended time window.
+      
+      Example: `3600`
+    </ParamField>
+  </Expandable>
+  
+  <Expandable title="Content-Based Intelligent Config">
+    <ParamField path="aggregate" type="string" required>
+      Whether alerts should be grouped if "all" or "any" specified fields match.
+    </ParamField>
+    
+    <ParamField path="fields" type="array" required>
+      Array of field names to group on.
+    </ParamField>
+    
+    <ParamField path="time_window" type="integer" required>
+      Time window in seconds (300-3600). Set to 0 to use the recommended time window.
+    </ParamField>
+  </Expandable>
+  
+  <Expandable title="Intelligent Config">
+    <ParamField path="time_window" type="integer" required>
+      Time window in seconds (300-3600). Set to 0 to use the recommended time window.
+    </ParamField>
+    
+    <ParamField path="iag_fields" type="array" optional default='["summary"]'>
+      Array of fields for intelligent grouping.
+    </ParamField>
+  </Expandable>
+  
+  <Expandable title="Time-Based Config">
+    <ParamField path="timeout" type="integer" required>
+      Duration in seconds to group alerts (60-86400). Set to 0 to group until incident is resolved.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField path="services" type="array" required>
+  Array of service references that this alert grouping setting applies to. Note: `content_based_intelligent` type allows only one service.
+  
+  Example:
+  ```json
+  [
+    {"id": "PSVC123", "type": "service_reference"},
+    {"id": "PSVC456", "type": "service_reference"}
+  ]
+  ```
+</ParamField>
+
+## Response
+
+Returns the created alert grouping setting object with all fields including generated ID and timestamps.
+
+<ResponseField name="id" type="string">
+  The unique identifier of the newly created alert grouping setting
+</ResponseField>
+
+<ResponseField name="type" type="string">
+  The type of alert grouping configuration
+</ResponseField>
+
+<ResponseField name="name" type="string">
+  The name of the alert grouping setting
+</ResponseField>
+
+<ResponseField name="description" type="string">
+  The description of the alert grouping setting
+</ResponseField>
+
+<ResponseField name="config" type="object">
+  The configuration for the alert grouping setting
+</ResponseField>
+
+<ResponseField name="services" type="array">
+  Array of service references
+</ResponseField>
+
+<ResponseField name="created_at" type="datetime">
+  The ISO8601 date/time when the setting was created
+</ResponseField>
+
+<ResponseField name="updated_at" type="datetime">
+  The ISO8601 date/time when the setting was last updated
+</ResponseField>
+
+## Example Usage
+
+<CodeGroup>
+```bash Natural Language
+"Create a content-based alert grouping for service PSVC123 that groups by component and severity"
+```
+
+```bash Time-Based Grouping
+"Set up time-based alert grouping for the production API service with a 1 hour window"
+```
+
+```bash Intelligent Grouping
+"Create an intelligent alert grouping setting for service PSVC456"
+```
+</CodeGroup>
+
+## Use Cases
+
+- **Reduce alert noise** - Group related alerts into single incidents
+- **Standardize grouping** - Apply consistent grouping rules across services
+- **Service-specific rules** - Customize grouping for different service types
+- **Optimize response** - Ensure responders see related alerts together
+- **Test grouping strategies** - Try different configurations to find optimal settings
+
+## Configuration Examples
+
+### Content-Based Grouping
+```json
+{
+  "type": "content_based",
+  "config": {
+    "aggregate": "all",
+    "fields": ["component", "environment"],
+    "time_window": 3600
+  },
+  "services": [{"id": "PSVC123"}]
+}
+```
+
+### Time-Based Grouping
+```json
+{
+  "type": "time",
+  "config": {
+    "timeout": 1800
+  },
+  "services": [{"id": "PSVC123"}]
+}
+```
+
+### Intelligent Grouping
+```json
+{
+  "type": "intelligent",
+  "config": {
+    "time_window": 0,
+    "iag_fields": ["summary"]
+  },
+  "services": [{"id": "PSVC123"}]
+}
+```
+
+## Important Notes
+
+<Warning>
+- The `content_based_intelligent` type supports only **one service** per setting
+- Setting `time_window` to 0 uses PagerDuty's recommended time window
+- Field names must match the structure of alerts sent to your service
+- Alert Grouping features are available only on certain PagerDuty plans
+- Each service can have only one active alert grouping setting
+</Warning>
+
+## Related Tools
+
+- [List Alert Grouping Settings](/tools/alert-grouping/list-settings) - View all settings
+- [Get Alert Grouping Setting](/tools/alert-grouping/get-setting) - View setting details
+- [Update Alert Grouping Setting](/tools/alert-grouping/update-setting) - Modify a setting
+- [Delete Alert Grouping Setting](/tools/alert-grouping/delete-setting) - Remove a setting

@@ -1,0 +1,157 @@
+---
+title: "list_users"
+description: "List users in your PagerDuty account with filtering"
+---
+
+## Overview
+
+Lists users in your PagerDuty account with optional filtering by name and team membership.
+
+<Info>
+This is a **read-only** tool that queries your PagerDuty account without making any changes.
+</Info>
+
+## Parameters
+
+<ParamField path="query_model" type="UserQuery" required>
+  Query parameters for filtering and pagination
+  
+  <Expandable title="UserQuery properties">
+    <ParamField path="query" type="string">
+      Filters results to users whose name matches the query string
+      
+      Example: "john" will match "John Smith" and "Johnny Doe"
+    </ParamField>
+    
+    <ParamField path="teams_ids" type="array">
+      Filter users by team IDs. Only users belonging to these teams will be returned.
+      
+      Example: `["P1A2B3C", "P4D5E6F"]`
+    </ParamField>
+    
+    <ParamField path="limit" type="integer" default="25">
+      Maximum number of results to return. Must be between 1 and 100.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+## Response
+
+Returns a `ListResponseModel[User]` containing:
+
+<ResponseField name="response" type="array">
+  Array of user objects
+  
+  <Expandable title="User properties">
+    <ResponseField name="id" type="string">
+      The ID of the user
+    </ResponseField>
+    
+    <ResponseField name="summary" type="string">
+      A short-form, server-generated string providing succinct information about the user
+    </ResponseField>
+    
+    <ResponseField name="name" type="string">
+      The name of the user
+    </ResponseField>
+    
+    <ResponseField name="email" type="string">
+      The email address of the user
+    </ResponseField>
+    
+    <ResponseField name="role" type="string">
+      The user's role in PagerDuty. Possible values:
+      - `admin` - Full administrative access
+      - `limited_user` - Limited user access
+      - `observer` - Read-only observer access
+      - `owner` - Account owner
+      - `read_only_user` - Read-only user access
+      - `restricted_access` - Restricted access
+      - `read_only_limited_user` - Read-only limited user
+      - `user` - Standard user access
+    </ResponseField>
+    
+    <ResponseField name="teams" type="array">
+      List of teams the user belongs to
+      
+      <Expandable title="TeamReference properties">
+        <ResponseField name="id" type="string">
+          Team ID
+        </ResponseField>
+        <ResponseField name="type" type="string">
+          Always "team_reference"
+        </ResponseField>
+        <ResponseField name="summary" type="string">
+          Team name
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+    
+    <ResponseField name="type" type="string">
+      Always "user"
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Usage Examples
+
+### List all users
+
+```
+Show me all users in the account
+```
+
+```
+List all PagerDuty users
+```
+
+### Search for users by name
+
+```
+Find users named John
+```
+
+```
+Show me users matching 'smith'
+```
+
+### Filter by team
+
+```
+List all users on the platform team
+```
+
+```
+Who are the members of team P1A2B3C?
+```
+
+### Limit results
+
+```
+Show me the first 10 users
+```
+
+## Use Cases
+
+- **User discovery** - Find users by name or team
+- **Team management** - See which users belong to specific teams
+- **Audit** - Review user roles and access levels
+- **Integration setup** - Get user IDs for assigning incidents or configuring escalations
+- **Directory** - Browse all users in your organization
+
+## Notes
+
+<Note>
+The `query` parameter performs a partial, case-insensitive match on user names. You don't need to provide the full name.
+</Note>
+
+<Tip>
+To get detailed information about a specific user (including contact methods and notification rules), use the [get_user_data](/tools/users/get-user-data) tool for the current user, or retrieve the user from this list and examine the returned fields.
+</Tip>
+
+## Related Tools
+
+- [get_user_data](/tools/users/get-user-data) - Get the current user's information
+- [list_teams](/tools/teams) - List all teams
+- [list_team_members](/tools/teams) - List members of a specific team
+- [add_team_member](/tools/teams) - Add a user to a team (write mode)

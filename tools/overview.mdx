@@ -1,0 +1,235 @@
+---
+title: "Tools Overview"
+description: "Complete reference for all PagerDuty MCP Server tools"
+---
+
+## Introduction to MCP Tools
+
+The PagerDuty MCP Server provides a comprehensive set of tools that enable AI assistants to interact with your PagerDuty account through the Model Context Protocol (MCP). These tools allow you to query data, create resources, update configurations, and manage incidents—all through natural language conversations with your AI assistant.
+
+## How Tools Work with AI Assistants
+
+When you ask your AI assistant to perform a PagerDuty-related task, the assistant:
+
+1. **Interprets your request** using natural language understanding
+2. **Selects the appropriate tool** from the available PagerDuty MCP tools
+3. **Calls the tool** with the necessary parameters
+4. **Processes the response** and presents it to you in a human-readable format
+
+For example, when you ask "Who is on-call for the production team?", the assistant uses the `list_oncalls` tool with appropriate filters to retrieve and display the information.
+
+<Note>
+The AI assistant handles all the API complexity for you—you don't need to know API endpoints, authentication headers, or JSON structures.
+</Note>
+
+## Tool Categories
+
+The PagerDuty MCP Server organizes tools into functional categories based on the PagerDuty resources they manage:
+
+<CardGroup cols={3}>
+  <Card title="Incidents" icon="fire" href="/tools/incidents/list-incidents">
+    Create, manage, and resolve incidents
+  </Card>
+  <Card title="Services" icon="server" href="/tools/services/list-services">
+    Manage services and service dependencies
+  </Card>
+  <Card title="Schedules" icon="calendar" href="/tools/schedules/list-schedules">
+    View and modify on-call schedules
+  </Card>
+  <Card title="Teams" icon="users" href="/tools/teams/list-teams">
+    Manage teams and team membership
+  </Card>
+  <Card title="Users" icon="user" href="/tools/users/list-users">
+    Retrieve user information
+  </Card>
+  <Card title="On-Call" icon="bell" href="/tools/schedules/list-oncalls">
+    Check current on-call status
+  </Card>
+  <Card title="Escalation Policies" icon="arrow-up" href="/tools/escalation-policies/list-policies">
+    View escalation policies
+  </Card>
+  <Card title="Event Orchestrations" icon="diagram-project" href="/tools/event-orchestrations/list-orchestrations">
+    Configure event routing and automation
+  </Card>
+  <Card title="Alert Grouping" icon="object-group" href="/tools/alert-grouping/list-settings">
+    Manage alert grouping settings
+  </Card>
+  <Card title="Change Events" icon="clock-rotate-left" href="/tools/change-events/list-change-events">
+    Track change events
+  </Card>
+  <Card title="Status Pages" icon="newspaper" href="/tools/status-pages/list-status-pages">
+    Manage status page posts
+  </Card>
+  <Card title="Log Entries" icon="file-lines" href="/tools/log-entries/list-log-entries">
+    View audit log entries
+  </Card>
+</CardGroup>
+
+## Complete Tools Reference
+
+The following table lists all 68 tools available in the PagerDuty MCP Server:
+
+| Tool                   | Area               | Description                                         | Read-only |
+|------------------------|--------------------|-----------------------------------------------------|-----------|
+| create_alert_grouping_setting | Alert Grouping | Creates a new alert grouping setting                | ❌         |
+| delete_alert_grouping_setting | Alert Grouping | Deletes an alert grouping setting                   | ❌         |
+| get_alert_grouping_setting    | Alert Grouping | Retrieves a specific alert grouping setting         | ✅         |
+| list_alert_grouping_settings  | Alert Grouping | Lists alert grouping settings with filtering        | ✅         |
+| update_alert_grouping_setting | Alert Grouping | Updates an existing alert grouping setting          | ❌         |
+| get_change_event       | Change Events      | Retrieves a specific change event                   | ✅         |
+| list_change_events     | Change Events      | Lists change events with optional filtering         | ✅         |
+| list_incident_change_events | Change Events | Lists change events related to a specific incident  | ✅         |
+| list_service_change_events | Change Events  | Lists change events for a specific service          | ✅         |
+| get_event_orchestration | Event Orchestrations | Retrieves a specific event orchestration           | ✅         |
+| get_event_orchestration_global | Event Orchestrations | Gets the global orchestration configuration for an event orchestration | ✅         |
+| get_event_orchestration_router | Event Orchestrations | Gets the router configuration for an event orchestration | ✅         |
+| get_event_orchestration_service | Event Orchestrations | Gets the service orchestration configuration for a specific service | ✅         |
+| list_event_orchestrations | Event Orchestrations | Lists event orchestrations with optional filtering | ✅         |
+| update_event_orchestration_router | Event Orchestrations | Updates the router configuration for an event orchestration | ❌         |
+| append_event_orchestration_router_rule | Event Orchestrations | Adds a new routing rule to an event orchestration router | ❌         |
+| list_escalation_policies | Escalation Policy  | Lists escalation policies                           | ✅         |
+| get_escalation_policy    | Escalation Policy  | Retrieves a specific escalation policy              | ✅         |
+| add_note_to_incident     | Incidents          | Adds note to an incident                            | ❌         |
+| add_responders           | Incidents          | Adds responders to an incident                      | ❌         |
+| create_incident          | Incidents          | Creates a new incident                              | ❌         |
+| get_alert_from_incident  | Incidents          | Retrieves a specific alert from an incident         | ✅         |
+| get_incident             | Incidents          | Retrieves a specific incident                       | ✅         |
+| get_outlier_incident     | Incidents          | Retrieves outlier incident information for a specific incident | ✅         |
+| get_past_incidents       | Incidents          | Retrieves past incidents related to a specific incident | ✅         |
+| get_related_incidents    | Incidents          | Retrieves related incidents for a specific incident | ✅         |
+| list_alerts_from_incident | Incidents         | Lists all alerts for a specific incident with pagination | ✅         |
+| list_incident_notes      | Incidents          | Lists all notes for a specific incident             | ✅         |
+| list_incidents           | Incidents          | Lists incidents                                     | ✅         |
+| manage_incidents         | Incidents          | Updates status, urgency, assignment, or escalation level | ❌     |
+| get_incident_workflow    | Incident Workflows | Retrieves a specific incident workflow              | ✅         |
+| list_incident_workflows  | Incident Workflows | Lists incident workflows with optional filtering    | ✅         |
+| start_incident_workflow  | Incident Workflows | Starts a workflow instance for an incident          | ❌         |
+| get_log_entry            | Log Entries        | Retrieves a specific log entry by ID                | ✅         |
+| list_log_entries         | Log Entries        | Lists all log entries across the account with time filtering | ✅ |
+| add_team_member          | Teams              | Adds a user to a team with a specific role          | ❌         |
+| create_team              | Teams              | Creates a new team                                  | ❌         |
+| delete_team              | Teams              | Deletes a team                                      | ❌         |
+| get_team                 | Teams              | Retrieves a specific team                           | ✅         |
+| list_team_members        | Teams              | Lists members of a team                             | ✅         |
+| list_teams               | Teams              | Lists teams                                         | ✅         |
+| remove_team_member       | Teams              | Removes a user from a team                          | ❌         |
+| update_team              | Teams              | Updates an existing team                            | ❌         |
+| get_user_data            | Users              | Gets the current user's data                        | ✅         |
+| list_users               | Users              | Lists users in the PagerDuty account                | ✅         |
+| list_oncalls             | On-call            | Lists on-call schedules                             | ✅         |
+| create_schedule_override | Schedules          | Creates an override for a schedule                  | ❌         |
+| get_schedule             | Schedules          | Retrieves a specific schedule                       | ✅         |
+| list_schedule_users      | Schedules          | Lists users in a schedule                           | ✅         |
+| list_schedules           | Schedules          | Lists schedules                                     | ✅         |
+| create_schedule          | Schedules          | Creates a new on-call schedule                      | ❌         |
+| update_schedule          | Schedules          | Updates an existing schedule                        | ❌         |
+| create_service           | Services           | Creates a new service                               | ❌         |
+| get_service              | Services           | Retrieves a specific service                        | ✅         |
+| list_services            | Services           | Lists services                                      | ✅         |
+| update_service           | Services           | Updates an existing service                         | ❌         |
+| create_status_page_post  | Status Pages       | Creates a new post (incident or maintenance) on a status page | ❌         |
+| create_status_page_post_update | Status Pages | Adds a new update to an existing status page post   | ❌         |
+| get_status_page_post     | Status Pages       | Retrieves details of a specific status page post    | ✅         |
+| list_status_page_impacts | Status Pages       | Lists available impact levels for a status page     | ✅         |
+| list_status_page_post_updates | Status Pages  | Lists all updates for a specific status page post   | ✅         |
+| list_status_page_severities | Status Pages    | Lists available severity levels for a status page   | ✅         |
+| list_status_page_statuses | Status Pages      | Lists available statuses for a status page          | ✅         |
+| list_status_pages        | Status Pages       | Lists all status pages with optional filtering      | ✅         |
+
+## Tool Naming Conventions
+
+PagerDuty MCP Server tools follow consistent naming conventions to make them intuitive:
+
+- **`list_*`** - Returns a collection of resources (e.g., `list_incidents`, `list_services`)
+- **`get_*`** - Retrieves a single resource by ID (e.g., `get_incident`, `get_service`)
+- **`create_*`** - Creates a new resource (e.g., `create_incident`, `create_team`)
+- **`update_*`** - Modifies an existing resource (e.g., `update_service`, `update_team`)
+- **`delete_*`** - Removes a resource (e.g., `delete_team`, `delete_alert_grouping_setting`)
+- **`add_*`** - Adds a component to a resource (e.g., `add_note_to_incident`, `add_responders`)
+- **`remove_*`** - Removes a component from a resource (e.g., `remove_team_member`)
+- **`manage_*`** - Performs multiple operations (e.g., `manage_incidents` for bulk updates)
+
+## Common Parameters
+
+Many tools share common parameter patterns:
+
+### Identifiers
+
+- **`id`** - The unique identifier for a resource (e.g., incident ID, service ID)
+- **`user_id`** - The ID of a PagerDuty user
+- **`team_id`** - The ID of a team
+- **`service_id`** - The ID of a service
+
+### Filtering and Pagination
+
+- **`limit`** - Maximum number of results to return (default varies by tool)
+- **`offset`** - Number of results to skip for pagination
+- **`query`** - Search query string for filtering results
+- **`since`** - Start date/time for time-based filtering
+- **`until`** - End date/time for time-based filtering
+
+### Common Filters
+
+- **`statuses`** - Filter by status (e.g., `triggered`, `acknowledged`, `resolved`)
+- **`urgencies`** - Filter by urgency level (e.g., `high`, `low`)
+- **`team_ids`** - Filter by team membership
+- **`service_ids`** - Filter by service
+- **`user_ids`** - Filter by user
+
+<Note>
+All parameters are handled by the AI assistant based on your natural language request. You don't need to memorize parameter names or formats.
+</Note>
+
+## Error Handling
+
+The PagerDuty MCP Server provides clear error messages when operations fail:
+
+### Common Errors
+
+- **Authentication errors** - Invalid or missing API token
+- **Permission errors** - Insufficient permissions for the requested operation
+- **Not found errors** - Resource does not exist or is not accessible
+- **Validation errors** - Invalid parameters or missing required fields
+- **Rate limit errors** - Too many requests in a short time period
+
+### Best Practices
+
+1. **Start with read-only operations** to verify connectivity and permissions
+2. **Use specific resource IDs** when possible to avoid ambiguity
+3. **Check error messages** for guidance on resolving issues
+4. **Verify write operations** are enabled with the `--enable-write-tools` flag
+5. **Review PagerDuty account permissions** if you encounter access errors
+
+<Warning>
+Write operations (create, update, delete) modify your live PagerDuty account. Always verify your request before confirming destructive operations.
+</Warning>
+
+## Safety Features
+
+The PagerDuty MCP Server includes built-in safety annotations that help AI assistants handle tools appropriately:
+
+- **`readOnlyHint: true`** - Indicates the tool only reads data and cannot modify resources
+- **`destructiveHint: true`** - Marks tools that can modify or delete resources
+- **`idempotentHint: true`** - Signals that repeated calls produce the same result
+
+These annotations help AI assistants:
+- Request confirmation before destructive operations
+- Retry idempotent operations safely
+- Explain the impact of each action
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Read vs Write Tools" icon="shield-check" href="/tools/read-vs-write">
+    Learn about tool safety and the --enable-write-tools flag
+  </Card>
+  <Card title="Incident Management" icon="fire" href="/guides/incident-management">
+    Explore common incident management workflows
+  </Card>
+  <Card title="Security Best Practices" icon="shield-halved" href="/guides/security-best-practices">
+    Configure secure access to your PagerDuty account
+  </Card>
+  <Card title="Read vs Write Tools" icon="shield-check" href="/tools/read-vs-write">
+    Understand read-only and write operations
+  </Card>
+</CardGroup>

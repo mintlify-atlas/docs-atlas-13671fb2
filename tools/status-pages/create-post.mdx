@@ -1,0 +1,229 @@
+---
+title: "Create Status Page Post"
+description: "Create a new incident or maintenance post on a status page"
+icon: "plus"
+---
+
+## Overview
+
+The `create_status_page_post` tool creates a new post (incident or maintenance) on a status page. According to the PagerDuty API, all posts require `starts_at`, `ends_at`, and at least one update.
+
+<Warning>
+This is a **write** tool that creates a public-facing status page post. You must enable write tools with the `--enable-write-tools` flag to use this tool.
+</Warning>
+
+## Parameters
+
+<ParamField path="status_page_id" type="string" required>
+  The unique identifier of the status page on which to create the post.
+  
+  Example: `"PSTATUS1"`
+</ParamField>
+
+<ParamField path="title" type="string" required>
+  The title of the post. This will be prominently displayed to status page viewers.
+  
+  Example: `"API Latency Issues"`
+</ParamField>
+
+<ParamField path="post_type" type="string" required>
+  The type of post. Options:
+  - `incident` - An unplanned service disruption
+  - `maintenance` - A planned maintenance window
+  
+  Example: `"incident"`
+</ParamField>
+
+<ParamField path="starts_at" type="datetime" required>
+  The date and time when the post becomes effective. Required for both incident and maintenance posts.
+  
+  Example: `"2024-01-15T14:00:00Z"`
+</ParamField>
+
+<ParamField path="ends_at" type="datetime" required>
+  The date and time when the post is concluded. Required for both incident and maintenance posts.
+  
+  Example: `"2024-01-15T16:00:00Z"`
+</ParamField>
+
+<ParamField path="status_page" type="object" required>
+  Reference to the status page (duplicate of status_page_id for API compatibility).
+  
+  Example: `{"id": "PSTATUS1", "type": "status_page"}`
+</ParamField>
+
+<ParamField path="updates" type="array" required>
+  List of post updates. At least one update is required when creating a post.
+  
+  <Expandable title="Post Update Object">
+    <ParamField path="message" type="string" required>
+      The message text for the update.
+      
+      Example: `"We are investigating increased API latency"`
+    </ParamField>
+    
+    <ParamField path="status" type="object" required>
+      Status reference. Common status IDs: `investigating`, `identified`, `monitoring`, `resolved`, `scheduled`, `in_progress`, `completed`
+      
+      Example: `{"id": "investigating", "type": "status_page_status"}`
+    </ParamField>
+    
+    <ParamField path="severity" type="object" required>
+      Severity reference. Common severity IDs: `none`, `minor`, `major`, `critical`
+      
+      Example: `{"id": "major", "type": "status_page_severity"}`
+    </ParamField>
+    
+    <ParamField path="impacted_services" type="array" optional default="[]">
+      List of impacted services. Can be an empty array if no services are impacted.
+      
+      Example:
+      ```json
+      [
+        {
+          "service": {"id": "SPSVC1", "type": "status_page_service"},
+          "impact": {"id": "degraded_performance", "type": "status_page_impact"}
+        }
+      ]
+      ```
+    </ParamField>
+    
+    <ParamField path="notify_subscribers" type="boolean" optional default="false">
+      Whether to notify subscribers of this update.
+      
+      Example: `true`
+    </ParamField>
+    
+    <ParamField path="update_frequency_ms" type="integer" optional>
+      The frequency of the next update in milliseconds. Use `null` for no frequency.
+      
+      Example: `3600000` (1 hour)
+    </ParamField>
+    
+    <ParamField path="reported_at" type="datetime" optional>
+      The date and time when the update was reported. Defaults to now if not specified.
+      
+      Example: `"2024-01-15T14:00:00Z"`
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+## Response
+
+Returns the created status page post object.
+
+<ResponseField name="id" type="string">
+  The unique identifier of the created post
+</ResponseField>
+
+<ResponseField name="type" type="string">
+  Always returns `"status_page_post"`
+</ResponseField>
+
+<ResponseField name="post_type" type="string">
+  The type of post (incident or maintenance)
+</ResponseField>
+
+<ResponseField name="title" type="string">
+  The title of the post
+</ResponseField>
+
+<ResponseField name="status_page" type="object">
+  Reference to the status page
+</ResponseField>
+
+<ResponseField name="starts_at" type="datetime">
+  When the post becomes effective
+</ResponseField>
+
+<ResponseField name="ends_at" type="datetime">
+  When the post is concluded
+</ResponseField>
+
+<ResponseField name="updates" type="array">
+  List of post updates
+</ResponseField>
+
+## Example Usage
+
+<CodeGroup>
+```bash Natural Language
+"Create an incident post on status page PSTATUS1 for API latency issues"
+```
+
+```bash Maintenance Window
+"Post a scheduled maintenance for database upgrades on our status page"
+```
+
+```bash Major Incident
+"Create a critical incident post about service outage"
+```
+</CodeGroup>
+
+## Use Cases
+
+- **Communicate incidents** - Inform customers about service disruptions
+- **Announce maintenance** - Notify users of planned maintenance windows
+- **Transparency** - Keep stakeholders informed of service status
+- **Reduce support load** - Proactively communicate known issues
+- **Meet SLAs** - Fulfill communication requirements during incidents
+
+## Complete Example
+
+```json
+{
+  "status_page_id": "PSTATUS1",
+  "title": "API Performance Degradation",
+  "post_type": "incident",
+  "starts_at": "2024-01-15T14:00:00Z",
+  "ends_at": "2024-01-15T16:30:00Z",
+  "status_page": {
+    "id": "PSTATUS1",
+    "type": "status_page"
+  },
+  "updates": [
+    {
+      "message": "We are investigating reports of increased API latency.",
+      "status": {
+        "id": "investigating",
+        "type": "status_page_status"
+      },
+      "severity": {
+        "id": "major",
+        "type": "status_page_severity"
+      },
+      "impacted_services": [
+        {
+          "service": {"id": "SPSVC1", "type": "status_page_service"},
+          "impact": {"id": "degraded_performance", "type": "status_page_impact"}
+        }
+      ],
+      "notify_subscribers": true,
+      "reported_at": "2024-01-15T14:00:00Z"
+    }
+  ]
+}
+```
+
+## Important Notes
+
+<Warning>
+- Posts are immediately visible to status page viewers
+- Both `starts_at` and `ends_at` are required for all post types
+- At least one update is required when creating a post
+- Status and severity IDs must exist on your status page (use list tools to discover available options)
+- Setting `notify_subscribers: true` will send notifications to all subscribers
+</Warning>
+
+<Note>
+Before creating a post, you may want to:
+1. Use [List Status Pages](/tools/status-pages/list-status-pages) to get the status page ID
+2. Use list severities, statuses, and impacts tools to discover available options
+3. Verify the time zone and formatting of your timestamps
+</Note>
+
+## Related Tools
+
+- [Get Status Page Post](/tools/status-pages/get-post) - View post details
+- [Create Status Page Post Update](/tools/status-pages/create-update) - Add updates to the post
+- [List Status Pages](/tools/status-pages/list-status-pages) - View available status pages

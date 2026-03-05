@@ -1,0 +1,84 @@
+---
+title: "get_team"
+description: "Get details for a specific team"
+---
+
+## Overview
+
+Retrieves detailed information about a specific team by its ID or name.
+
+<Info>
+This is a **read-only** tool that does not modify any data in your PagerDuty account.
+</Info>
+
+## Parameters
+
+<ParamField query="team_id" type="string" required>
+  The ID or name of the team to retrieve. PagerDuty supports both team IDs (e.g., "P4B2Z3G") and team names.
+</ParamField>
+
+## Response
+
+Returns a detailed team object with the following fields:
+
+<ResponseField name="id" type="string">
+  The unique identifier for the team
+</ResponseField>
+
+<ResponseField name="name" type="string">
+  The name of the team
+</ResponseField>
+
+<ResponseField name="summary" type="string">
+  A short description of the team
+</ResponseField>
+
+<ResponseField name="description" type="string">
+  The full description of the team, if set
+</ResponseField>
+
+<ResponseField name="type" type="string">
+  Always "team"
+</ResponseField>
+
+## Example Usage
+
+### Get team by ID
+```
+Show me details for team P4B2Z3G
+```
+
+### Get team by name
+```
+Get information about the "Backend Services" team
+```
+
+### Verify team exists
+```
+Does the team "Frontend" exist in PagerDuty?
+```
+
+## Common Use Cases
+
+- **Team verification** - Confirm a team exists before performing operations
+- **Getting team IDs** - Look up the ID for a team when you only know the name
+- **Team information** - Review team details and descriptions
+- **Validation** - Verify team references in configurations or scripts
+- **Documentation** - Generate reports including team information
+
+## Related Tools
+
+<CardGroup cols={2}>
+  <Card title="list_teams" icon="list" href="/tools/teams/list-teams">
+    List all teams
+  </Card>
+  <Card title="list_team_members" icon="user" href="/tools/teams/manage-members">
+    View team members
+  </Card>
+  <Card title="update_team" icon="pen" href="/tools/teams/update-team">
+    Modify team details (write mode)
+  </Card>
+  <Card title="list_services" icon="server" href="/tools/services/list-services">
+    List services for this team
+  </Card>
+</CardGroup>

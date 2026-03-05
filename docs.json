@@ -1,122 +1,210 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "mint",
-  "name": "Mint Starter Kit",
+  "name": "PagerDuty MCP Server",
+  "theme": "aspen",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#06AC38",
+    "light": "#10B981",
+    "dark": "#059669"
   },
-  "favicon": "/favicon.svg",
+  "navbar": {
+    "primary": {
+      "type": "github",
+      "href": "https://github.com/PagerDuty/pagerduty-mcp-server"
+    }
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/PagerDuty/pagerduty-mcp-server"
+    }
+  },
   "navigation": {
     "tabs": [
       {
-        "tab": "Guides",
+        "tab": "Documentation",
         "groups": [
           {
-            "group": "Getting started",
+            "group": "Get Started",
             "pages": [
-              "index",
+              "introduction",
               "quickstart",
-              "development"
+              "installation"
             ]
           },
           {
-            "group": "Customization",
+            "group": "Configuration",
             "pages": [
-              "essentials/settings",
-              "essentials/navigation"
+              "configuration/api-authentication",
+              "configuration/write-mode",
+              "configuration/regional-endpoints"
             ]
           },
           {
-            "group": "Writing content",
+            "group": "Client Integration",
             "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/reusable-snippets"
+              "clients/cursor",
+              "clients/vscode",
+              "clients/claude-desktop"
             ]
           },
           {
-            "group": "AI tools",
+            "group": "Deployment",
             "pages": [
-              "ai-tools/cursor",
-              "ai-tools/claude-code",
-              "ai-tools/windsurf"
+              "deployment/docker",
+              "deployment/local-development"
             ]
           }
         ]
       },
       {
-        "tab": "API reference",
+        "tab": "Tools Reference",
         "groups": [
           {
-            "group": "API documentation",
+            "group": "Overview",
             "pages": [
-              "api-reference/introduction"
+              "tools/overview",
+              "tools/read-vs-write"
             ]
           },
           {
-            "group": "Endpoint examples",
+            "group": "Incidents",
             "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
+              "tools/incidents/list-incidents",
+              "tools/incidents/get-incident",
+              "tools/incidents/create-incident",
+              "tools/incidents/manage-incidents",
+              "tools/incidents/add-note",
+              "tools/incidents/add-responders",
+              "tools/incidents/related-incidents"
+            ]
+          },
+          {
+            "group": "Alerts",
+            "pages": [
+              "tools/alerts/list-alerts",
+              "tools/alerts/get-alert"
+            ]
+          },
+          {
+            "group": "Services",
+            "pages": [
+              "tools/services/list-services",
+              "tools/services/get-service",
+              "tools/services/create-service",
+              "tools/services/update-service"
+            ]
+          },
+          {
+            "group": "Schedules & On-Call",
+            "pages": [
+              "tools/schedules/list-schedules",
+              "tools/schedules/get-schedule",
+              "tools/schedules/create-schedule",
+              "tools/schedules/update-schedule",
+              "tools/schedules/create-override",
+              "tools/schedules/list-oncalls"
+            ]
+          },
+          {
+            "group": "Event Orchestrations",
+            "pages": [
+              "tools/event-orchestrations/list-orchestrations",
+              "tools/event-orchestrations/get-orchestration",
+              "tools/event-orchestrations/get-router",
+              "tools/event-orchestrations/update-router",
+              "tools/event-orchestrations/append-rule"
+            ]
+          },
+          {
+            "group": "Teams",
+            "pages": [
+              "tools/teams/list-teams",
+              "tools/teams/get-team",
+              "tools/teams/create-team",
+              "tools/teams/update-team",
+              "tools/teams/delete-team",
+              "tools/teams/manage-members"
+            ]
+          },
+          {
+            "group": "Users",
+            "pages": [
+              "tools/users/get-user-data",
+              "tools/users/list-users"
+            ]
+          },
+          {
+            "group": "Escalation Policies",
+            "pages": [
+              "tools/escalation-policies/list-policies",
+              "tools/escalation-policies/get-policy"
+            ]
+          },
+          {
+            "group": "Incident Workflows",
+            "pages": [
+              "tools/incident-workflows/list-workflows",
+              "tools/incident-workflows/get-workflow",
+              "tools/incident-workflows/start-workflow"
+            ]
+          },
+          {
+            "group": "Change Events",
+            "pages": [
+              "tools/change-events/list-change-events",
+              "tools/change-events/get-change-event"
+            ]
+          },
+          {
+            "group": "Log Entries",
+            "pages": [
+              "tools/log-entries/list-log-entries",
+              "tools/log-entries/get-log-entry"
+            ]
+          },
+          {
+            "group": "Alert Grouping",
+            "pages": [
+              "tools/alert-grouping/list-settings",
+              "tools/alert-grouping/get-setting",
+              "tools/alert-grouping/create-setting",
+              "tools/alert-grouping/update-setting",
+              "tools/alert-grouping/delete-setting"
+            ]
+          },
+          {
+            "group": "Status Pages",
+            "pages": [
+              "tools/status-pages/list-status-pages",
+              "tools/status-pages/get-post",
+              "tools/status-pages/create-post",
+              "tools/status-pages/create-update"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Guides",
+        "groups": [
+          {
+            "group": "Usage Patterns",
+            "pages": [
+              "guides/incident-management",
+              "guides/on-call-management",
+              "guides/orchestration-setup",
+              "guides/security-best-practices"
+            ]
+          },
+          {
+            "group": "Support",
+            "pages": [
+              "guides/troubleshooting",
+              "guides/contributing",
+              "guides/changelog"
             ]
           }
         ]
       }
-    ],
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
-        },
-        {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
-        }
-      ]
-    }
-  },
-  "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
-  },
-  "navbar": {
-    "links": [
-      {
-        "label": "Support",
-        "href": "mailto:hi@mintlify.com"
-      }
-    ],
-    "primary": {
-      "type": "button",
-      "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
-    }
-  },
-  "contextual": {
-    "options": [
-     "copy",
-     "view",
-     "chatgpt",
-     "claude",
-     "perplexity",
-     "mcp",
-     "cursor",
-     "vscode"
-   ]
-  },
-  "footer": {
-    "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
-    }
+    ]
   }
 }

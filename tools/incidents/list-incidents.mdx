@@ -1,0 +1,236 @@
+---
+title: "list_incidents"
+description: "List and filter incidents across your PagerDuty account"
+---
+
+<Info>
+**Tool Name:** `list_incidents`
+
+**Category:** Incidents
+
+**Mode:** Read-only
+</Info>
+
+## Overview
+
+The `list_incidents` tool retrieves a list of incidents from your PagerDuty account with powerful filtering options. You can filter by status, date range, service, team, user assignment, urgency, and more.
+
+## Parameters
+
+<ParamField path="status" type="list[string]" optional>
+  Filter incidents by status. Multiple statuses can be specified.
+  
+  **Allowed values:**
+  - `triggered` - Newly created, unacknowledged incidents
+  - `acknowledged` - Incidents that have been acknowledged
+  - `resolved` - Incidents that have been resolved
+  
+  **Example:** `["triggered", "acknowledged"]`
+</ParamField>
+
+<ParamField path="since" type="datetime" optional>
+  Filter incidents created since this date/time. Use ISO 8601 format.
+  
+  **Example:** `"2024-03-01T00:00:00Z"`
+</ParamField>
+
+<ParamField path="until" type="datetime" optional>
+  Filter incidents created until this date/time. Use ISO 8601 format.
+  
+  **Example:** `"2024-03-05T23:59:59Z"`
+</ParamField>
+
+<ParamField path="user_ids" type="list[string]" optional>
+  Filter incidents assigned to specific users. Provide a list of user IDs.
+  
+  **Example:** `["PXXXXXX", "PYYYYYY"]`
+</ParamField>
+
+<ParamField path="service_ids" type="list[string]" optional>
+  Filter incidents by service. Provide a list of service IDs.
+  
+  **Example:** `["PXXXXXX", "PYYYYYY"]`
+</ParamField>
+
+<ParamField path="teams_ids" type="list[string]" optional>
+  Filter incidents by team. Provide a list of team IDs.
+  
+  **Example:** `["PXXXXXX", "PYYYYYY"]`
+</ParamField>
+
+<ParamField path="urgencies" type="list[string]" optional>
+  Filter incidents by urgency level.
+  
+  **Allowed values:**
+  - `high` - High urgency incidents
+  - `low` - Low urgency incidents
+  
+  **Example:** `["high"]`
+</ParamField>
+
+<ParamField path="request_scope" type="string" default="all">
+  Scope incidents based on the authenticated user's context.
+  
+  **Allowed values:**
+  - `all` - All incidents visible to the user (default)
+  - `teams` - Incidents assigned to the user's teams (requires user token)
+  - `assigned` - Incidents assigned to the authenticated user (requires user token)
+  
+  <Warning>
+  The `teams` and `assigned` scopes require a user-level API token. Account-level tokens will return an error.
+  </Warning>
+</ParamField>
+
+<ParamField path="limit" type="integer" default="100">
+  Maximum number of results to return. Must be between 1 and 1000.
+  
+  **Example:** `50`
+</ParamField>
+
+<ParamField path="sort_by" type="list[string]" optional>
+  Sort results by field and direction. Up to two fields can be specified, separated by comma.
+  
+  **Allowed values:**
+  - `incident_number:asc` / `incident_number:desc`
+  - `created_at:asc` / `created_at:desc`
+  - `resolved_at:asc` / `resolved_at:desc`
+  - `urgency:asc` / `urgency:desc` (requires account to have urgencies ability)
+  
+  **Example:** `["created_at:desc", "urgency:desc"]`
+</ParamField>
+
+## Usage Examples
+
+### List all triggered incidents
+
+```python
+{
+  "status": ["triggered"]
+}
+```
+
+### List high urgency incidents for a service
+
+```python
+{
+  "service_ids": ["PXXXXXX"],
+  "urgencies": ["high"],
+  "status": ["triggered", "acknowledged"]
+}
+```
+
+### List incidents from the last 24 hours
+
+```python
+{
+  "since": "2024-03-04T00:00:00Z",
+  "until": "2024-03-05T00:00:00Z",
+  "sort_by": ["created_at:desc"]
+}
+```
+
+### List incidents assigned to me
+
+```python
+{
+  "request_scope": "assigned",
+  "status": ["triggered", "acknowledged"]
+}
+```
+
+## Response Format
+
+Returns a `ListResponseModel[Incident]` containing a list of incident objects.
+
+<ResponseField name="response" type="list[Incident]">
+  List of incidents matching the query parameters.
+  
+  <ResponseField name="id" type="string">
+    The unique ID of the incident.
+  </ResponseField>
+  
+  <ResponseField name="incident_number" type="integer">
+    The incident number (unique across your account).
+  </ResponseField>
+  
+  <ResponseField name="status" type="string">
+    Current status: `triggered`, `acknowledged`, or `resolved`.
+  </ResponseField>
+  
+  <ResponseField name="title" type="string">
+    A succinct description of the incident.
+  </ResponseField>
+  
+  <ResponseField name="summary" type="string" optional>
+    A short summary of the incident.
+  </ResponseField>
+  
+  <ResponseField name="created_at" type="datetime">
+    When the incident was first triggered.
+  </ResponseField>
+  
+  <ResponseField name="updated_at" type="datetime">
+    When the incident was last modified.
+  </ResponseField>
+  
+  <ResponseField name="resolved_at" type="datetime" optional>
+    When the incident was resolved (null if not resolved).
+  </ResponseField>
+  
+  <ResponseField name="service" type="ServiceReference">
+    The service the incident is associated with.
+  </ResponseField>
+  
+  <ResponseField name="assignments" type="list[Assignment]" optional>
+    List of users assigned to the incident.
+  </ResponseField>
+</ResponseField>
+
+## Common Errors
+
+<Warning>
+**Scope error with account-level auth**
+
+If you use `request_scope: "assigned"` or `request_scope: "teams"` with an account-level API token, you'll receive an error:
+
+```
+Cannot filter incidents by "[scope]" with account-level auth. Please provide a user token, or scope the request differently.
+```
+
+**Solution:** Use a user-level API token or set `request_scope: "all"`.
+</Warning>
+
+<Warning>
+**Invalid status parameter**
+
+If you mistakenly use `statuses` instead of `status`, you'll receive:
+
+```
+The correct parameter to filter by multiple Incidents statuses is "status", not "statuses"
+```
+
+**Solution:** Use `status` as the parameter name.
+</Warning>
+
+## Related Tools
+
+<CardGroup cols={2}>
+  <Card title="get_incident" icon="magnifying-glass" href="/tools/incidents/get-incident">
+    Get details for a specific incident
+  </Card>
+  <Card title="manage_incidents" icon="sliders" href="/tools/incidents/manage-incidents">
+    Update multiple incidents at once
+  </Card>
+  <Card title="create_incident" icon="plus" href="/tools/incidents/create-incident">
+    Create a new incident
+  </Card>
+  <Card title="list_incident_notes" icon="comment" href="/tools/incidents/add-note">
+    View notes on an incident
+  </Card>
+</CardGroup>
+
+## Source Reference
+
+**Function:** `list_incidents` in `pagerduty_mcp/tools/incidents.py:27`
+
+**Models:** `IncidentQuery`, `Incident` in `pagerduty_mcp/models/incidents.py`

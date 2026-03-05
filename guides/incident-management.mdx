@@ -1,0 +1,289 @@
+---
+title: Incident Management Guide
+description: Complete guide to managing PagerDuty incidents through the MCP server
+---
+
+This guide covers how to effectively manage incidents in PagerDuty using the MCP server tools.
+
+## Overview
+
+The PagerDuty MCP server provides comprehensive tools for managing your incident lifecycle, from creation through resolution. All incident management operations can be performed through natural language commands to your AI assistant.
+
+<Note>
+Write operations require starting the server with the `--enable-write-tools` flag. See [Configuration](/configuration/server-options) for details.
+</Note>
+
+## Viewing Incidents
+
+### List All Incidents
+
+To view current incidents:
+
+```
+Show me all open incidents
+```
+
+The [`list_incidents`](/tools/incidents/list-incidents) tool supports filtering by:
+- **Status**: `triggered`, `acknowledged`, `resolved`
+- **Urgency**: `high`, `low`
+- **Service**: Filter to specific service IDs
+- **Team**: Filter to specific team IDs
+- **Time range**: Start and end dates
+- **User assignment**: `assigned` (your incidents) or `teams` (your team's incidents)
+
+### Get Incident Details
+
+For detailed information about a specific incident:
+
+```
+Get details for incident INC-1234
+```
+
+The [`get_incident`](/tools/incidents/get-incident) tool returns:
+- Current status and urgency
+- Service and escalation policy
+- Assignments and acknowledgments
+- Timeline of status changes
+- Related alerts
+
+### View Incident Alerts
+
+List all alerts associated with an incident:
+
+```
+Show alerts for incident INC-1234
+```
+
+The [`list_alerts_from_incident`](/tools/incidents/list-alerts-from-incident) tool provides alert details including event data, severity, and timestamps.
+
+## Creating Incidents
+
+<Warning>
+Requires `--enable-write-tools` flag
+</Warning>
+
+Create a new incident with the [`create_incident`](/tools/incidents/create-incident) tool:
+
+```
+Create a high urgency incident for the API service with title "Database connection pool exhausted"
+```
+
+**Required fields:**
+- **title**: Brief description of the incident
+- **service_id**: The service experiencing the issue
+
+**Optional fields:**
+- **urgency**: `high` or `low` (defaults to service settings)
+- **body**: Detailed description
+- **incident_key**: Deduplication key for related events
+- **escalation_policy_id**: Override the service's default escalation policy
+
+## Managing the Incident Lifecycle
+
+### Acknowledge Incidents
+
+Acknowledge one or more incidents to indicate you're working on them:
+
+```
+Acknowledge incident INC-1234
+```
+
+Use the [`manage_incidents`](/tools/incidents/manage-incidents) tool with `status: acknowledged`.
+
+### Resolve Incidents
+
+Mark incidents as resolved once the issue is fixed:
+
+```
+Resolve incidents INC-1234 and INC-1235
+```
+
+Use the [`manage_incidents`](/tools/incidents/manage-incidents) tool with `status: resolved`.
+
+### Reassign Incidents
+
+Reassign an incident to another user:
+
+```
+Reassign incident INC-1234 to user PABCDEF
+```
+
+Provide the user ID in the `assignment` field of the [`manage_incidents`](/tools/incidents/manage-incidents) tool.
+
+### Change Urgency
+
+Update incident urgency level:
+
+```
+Change incident INC-1234 urgency to high
+```
+
+Use the [`manage_incidents`](/tools/incidents/manage-incidents) tool with `urgency: high` or `urgency: low`.
+
+### Escalate Incidents
+
+Manually escalate an incident to the next level in the escalation policy:
+
+```
+Escalate incident INC-1234 to level 2
+```
+
+Use the [`manage_incidents`](/tools/incidents/manage-incidents) tool with the `escalation_level` field.
+
+## Adding Context to Incidents
+
+### Add Notes
+
+Document findings, actions taken, or relevant information:
+
+```
+Add a note to incident INC-1234: "Database connection pool increased from 50 to 100"
+```
+
+The [`add_note_to_incident`](/tools/incidents/add-note-to-incident) tool creates a timestamped note visible to all responders.
+
+### View Incident Notes
+
+Retrieve all notes for an incident:
+
+```
+Show notes for incident INC-1234
+```
+
+The [`list_incident_notes`](/tools/incidents/list-incident-notes) tool returns all notes with author and timestamp information.
+
+## Collaborating on Incidents
+
+### Add Responders
+
+Request additional help on an incident:
+
+```
+Add user PXYZ123 as a responder to incident INC-1234
+```
+
+The [`add_responders`](/tools/incidents/add-responders) tool can add:
+- **Users**: Individual responders by user ID
+- **Escalation policies**: Notify an entire escalation policy
+
+You can optionally include a message explaining why assistance is needed.
+
+## Analyzing Incidents
+
+### View Related Incidents
+
+Find incidents related to the current one:
+
+```
+Show related incidents for INC-1234
+```
+
+The [`get_related_incidents`](/tools/incidents/get-related-incidents) tool uses PagerDuty's machine learning to identify similar incidents based on:
+- Service relationships
+- Alert patterns
+- Timing correlations
+
+### View Past Similar Incidents
+
+Retrieve historical incidents with similar characteristics:
+
+```
+Show past incidents similar to INC-1234
+```
+
+The [`get_past_incidents`](/tools/incidents/get-past-incidents) tool helps identify recurring issues and learn from previous resolutions.
+
+### Identify Outlier Incidents
+
+Determine if an incident is unusual:
+
+```
+Is incident INC-1234 an outlier?
+```
+
+The [`get_outlier_incident`](/tools/incidents/get-outlier-incident) tool provides:
+- Occurrence frequency
+- Rarity category
+- Historical context
+- Pattern matching information
+
+## Common Workflows
+
+### Triage New Incidents
+
+1. **List triggered incidents**: `Show all triggered incidents`
+2. **Review details**: `Get details for incident INC-1234`
+3. **Check alerts**: `Show alerts for incident INC-1234`
+4. **Acknowledge**: `Acknowledge incident INC-1234`
+5. **Add context**: `Add note to incident INC-1234: "Investigating...."`
+
+### Incident Response
+
+1. **Acknowledge incident**: Signals you're working on it
+2. **Check related/past incidents**: Learn from similar issues
+3. **Add responders if needed**: Request help from specialists
+4. **Document actions in notes**: Keep team informed
+5. **Resolve when fixed**: Close the incident
+
+### Bulk Operations
+
+Manage multiple incidents simultaneously:
+
+```
+Resolve all incidents for service SVC-123 that are acknowledged
+```
+
+The assistant will:
+1. Filter incidents by service and status
+2. Use [`manage_incidents`](/tools/incidents/manage-incidents) to update all at once
+
+### Post-Incident Analysis
+
+```
+Show me all high urgency incidents from last week that affected the API service
+```
+
+Use date filters with [`list_incidents`](/tools/incidents/list-incidents) to analyze incident trends and patterns.
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Always acknowledge before working">
+    Acknowledging incidents prevents duplicate work and lets your team know someone is investigating.
+  </Accordion>
+
+  <Accordion title="Document as you go">
+    Add notes throughout your investigation. This helps with:
+    - Team coordination
+    - Knowledge sharing
+    - Post-incident reviews
+    - Future similar incidents
+  </Accordion>
+
+  <Accordion title="Use appropriate urgency levels">
+    Set urgency correctly to ensure proper routing:
+    - **High**: Immediate impact, requires urgent response
+    - **Low**: Minimal impact, can be addressed during business hours
+  </Accordion>
+
+  <Accordion title="Leverage incident relationships">
+    Check related and past incidents to:
+    - Identify root causes faster
+    - Learn from previous resolutions
+    - Spot recurring patterns
+  </Accordion>
+
+  <Accordion title="Resolve promptly">
+    Mark incidents as resolved once the issue is fixed. This:
+    - Keeps metrics accurate
+    - Clears on-call queues
+    - Maintains clean incident history
+  </Accordion>
+</AccordionGroup>
+
+## Related Resources
+
+- [Incident Tools Reference](/tools/incidents/overview)
+- [Incident Workflows Guide](/guides/incident-workflows)
+- [On-Call Management](/guides/on-call-management)
+- [Security Best Practices](/guides/security-best-practices)

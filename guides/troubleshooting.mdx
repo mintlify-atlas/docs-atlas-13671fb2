@@ -1,0 +1,574 @@
+---
+title: Troubleshooting Guide
+description: Common issues and solutions for the PagerDuty MCP server
+---
+
+This guide covers common issues you may encounter when using the PagerDuty MCP server and how to resolve them.
+
+## Authentication Errors
+
+### Invalid API Token
+
+**Error message:**
+```
+Authentication failed: Invalid API token
+```
+
+**Causes and solutions:**
+
+<AccordionGroup>
+  <Accordion title="Token not set or incorrect">
+    **Check your configuration:**
+    
+    VS Code/Cursor:
+    ```json
+    "env": {
+      "PAGERDUTY_USER_API_KEY": "${input:pagerduty-api-key}"
+    }
+    ```
+    
+    Claude Desktop:
+    ```json
+    "env": {
+      "PAGERDUTY_USER_API_KEY": "your-actual-token-here"
+    }
+    ```
+    
+    **Verify token:**
+    - Go to PagerDuty > My Profile > User Settings > API Access
+    - Ensure token exists and hasn't been deleted
+    - Create a new token if needed
+  </Accordion>
+
+  <Accordion title="Token expired or revoked">
+    User API Tokens don't expire automatically, but they can be revoked:
+    
+    1. Check if the token still exists in PagerDuty
+    2. If revoked, create a new token
+    3. Update your MCP server configuration
+    4. Restart the MCP server or client
+  </Accordion>
+
+  <Accordion title="Environment variable not set">
+    When running locally with `uv`:
+    
+    ```bash
+    # Check if environment variable is set
+    echo $PAGERDUTY_USER_API_KEY
+    
+    # Set it temporarily
+    export PAGERDUTY_USER_API_KEY="your-token-here"
+    
+    # Or use .env file
+    echo "PAGERDUTY_USER_API_KEY=your-token-here" > .env
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Wrong API Region
+
+**Error message:**
+```
+Authentication failed or Connection refused
+```
+
+**Solution:**
+
+If your PagerDuty account is in the EU region, you must set the correct API host:
+
+```json
+"env": {
+  "PAGERDUTY_USER_API_KEY": "your-token-here",
+  "PAGERDUTY_API_HOST": "https://api.eu.pagerduty.com"
+}
+```
+
+**How to verify your region:**
+1. Log into PagerDuty
+2. Check the URL: `app.pagerduty.com` (US) or `app.eu.pagerduty.com` (EU)
+3. Set `PAGERDUTY_API_HOST` accordingly
+
+### Insufficient Permissions
+
+**Error message:**
+```
+Access denied: Insufficient permissions
+```
+
+**Cause:**
+Your user role doesn't have permission for the requested operation.
+
+**Solutions:**
+
+1. **Check your user role**: Go to PagerDuty > My Profile to see your role
+2. **Required roles for common operations**:
+   - **Read operations**: All roles (Responder, Manager, Admin, Owner)
+   - **Create incidents**: Responder or higher
+   - **Modify schedules**: Manager or higher
+   - **Update services**: Manager or higher
+   - **Manage teams**: Admin or higher
+
+3. **Request elevated permissions**: Contact your PagerDuty admin if you need higher access
+
+4. **Use appropriate token**: Ensure the token is from a user with sufficient permissions
+
+## Connection Issues
+
+### Cannot Connect to PagerDuty API
+
+**Error message:**
+```
+Connection error: Unable to reach api.pagerduty.com
+```
+
+**Troubleshooting steps:**
+
+<Steps>
+  <Step title="Check internet connectivity">
+    ```bash
+    # Test basic connectivity
+    ping api.pagerduty.com
+    
+    # Test HTTPS connectivity
+    curl -I https://api.pagerduty.com
+    ```
+  </Step>
+  
+  <Step title="Verify DNS resolution">
+    ```bash
+    # Check DNS lookup
+    nslookup api.pagerduty.com
+    
+    # Or with dig
+    dig api.pagerduty.com
+    ```
+  </Step>
+  
+  <Step title="Check firewall/proxy">
+    - Ensure outbound HTTPS (port 443) is allowed
+    - If behind a corporate proxy, configure proxy settings
+    - Check if VPN is required for external API access
+  </Step>
+  
+  <Step title="Test API directly">
+    ```bash
+    curl -H "Authorization: Token token=your-token-here" \
+      https://api.pagerduty.com/users/me
+    ```
+    
+    If this works, the issue is with the MCP server configuration.
+  </Step>
+</Steps>
+
+### SSL/TLS Certificate Errors
+
+**Error message:**
+```
+SSL certificate verification failed
+```
+
+**Causes:**
+- Corporate proxy with SSL inspection
+- Outdated system certificates
+- System clock incorrect
+
+**Solutions:**
+
+1. **Update system certificates**:
+   ```bash
+   # Ubuntu/Debian
+   sudo apt-get update
+   sudo apt-get install ca-certificates
+   
+   # macOS
+   # Certificates are managed by Keychain Access
+   # Update macOS to latest version
+   ```
+
+2. **Check system time**:
+   ```bash
+   date
+   # Ensure date/time is correct
+   # SSL certificates are time-sensitive
+   ```
+
+3. **Corporate proxy**: Contact your IT department for proxy certificate configuration
+
+<Warning>
+Never disable SSL certificate verification in production environments.
+</Warning>
+
+## Tool Invocation Errors
+
+### Missing Required Parameters
+
+**Error message:**
+```
+Validation error: Missing required parameter 'incident_id'
+```
+
+**Solution:**
+
+Provide all required parameters when using tools. Check the tool documentation:
+
+- [Incidents Tools](/tools/incidents/overview)
+- [Schedules Tools](/tools/schedules/overview)
+- [Services Tools](/tools/services/overview)
+- [Event Orchestrations Tools](/tools/event-orchestrations/overview)
+
+**Example:**
+```
+# ❌ Incorrect - missing incident ID
+Show incident details
+
+# ✅ Correct - includes incident ID
+Show details for incident INC-1234
+```
+
+### Invalid Parameter Values
+
+**Error message:**
+```
+Validation error: Invalid value for 'status': must be one of [triggered, acknowledged, resolved]
+```
+
+**Solution:**
+
+Check that parameter values match the expected format:
+
+**Common parameters and valid values:**
+
+- **Status**: `triggered`, `acknowledged`, `resolved`
+- **Urgency**: `high`, `low`
+- **Event action**: `trigger`, `resolve`, `acknowledge`, `suppress`
+- **Date/time**: ISO 8601 format (e.g., `2026-03-10T14:30:00Z`)
+- **IDs**: Format varies by resource type:
+  - Incidents: `INC-####` or just the numeric ID
+  - Users: `P######` format
+  - Services: `SVC####` format (varies)
+  - Schedules: `SCHED####` format (varies)
+
+### Resource Not Found
+
+**Error message:**
+```
+Resource not found: Incident INC-9999 does not exist
+```
+
+**Troubleshooting:**
+
+1. **Verify the ID**:
+   - Check for typos in the ID
+   - Ensure you're using the correct ID type
+   - Some resources use numeric IDs, others use prefixes
+
+2. **Check access permissions**:
+   - You may not have permission to view the resource
+   - Resource might be in a team you're not part of
+
+3. **Confirm resource exists**:
+   - Resource may have been deleted
+   - Use list operations to find valid IDs
+
+4. **List available resources**:
+   ```
+   # List incidents to find correct ID
+   List all incidents
+   
+   # List services
+   Show all services
+   
+   # List schedules
+   List schedules
+   ```
+
+### Write Operations Disabled
+
+**Error message:**
+```
+Operation not permitted: Write tools are not enabled
+```
+
+**Solution:**
+
+Write operations require the `--enable-write-tools` flag:
+
+**VS Code/Cursor:**
+```json
+"args": [
+  "pagerduty-mcp",
+  "--enable-write-tools"
+]
+```
+
+**Claude Desktop:**
+```json
+"args": [
+  "pagerduty-mcp",
+  "--enable-write-tools"
+]
+```
+
+**Local development:**
+```bash
+uv run --directory /path/to/mcp-server python -m pagerduty_mcp --enable-write-tools
+```
+
+<Warning>
+Only enable write tools when you need to modify PagerDuty data. See [Security Best Practices](/guides/security-best-practices) for guidance.
+</Warning>
+
+## MCP Server Startup Issues
+
+### Server Won't Start
+
+**Symptoms:**
+- MCP server doesn't appear in client
+- Client shows "Server not available"
+- No response from MCP tools
+
+**Troubleshooting:**
+
+<AccordionGroup>
+  <Accordion title="Check Python version">
+    The server requires Python 3.12:
+    
+    ```bash
+    python --version
+    # Should show Python 3.12.x
+    ```
+    
+    If using `asdf`:
+    ```bash
+    asdf current python
+    asdf install python 3.12.0
+    asdf global python 3.12.0
+    ```
+  </Accordion>
+
+  <Accordion title="Verify uv installation">
+    ```bash
+    # Check if uv is installed
+    uv --version
+    
+    # If not installed
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+    ```
+  </Accordion>
+
+  <Accordion title="Check package installation">
+    For `uvx` (recommended):
+    ```bash
+    # Test if package is accessible
+    uvx pagerduty-mcp --help
+    ```
+    
+    For local development:
+    ```bash
+    cd /path/to/pagerduty-mcp
+    uv sync
+    uv run python -m pagerduty_mcp --help
+    ```
+  </Accordion>
+
+  <Accordion title="Review client logs">
+    **VS Code:**
+    1. Open Command Palette (`Cmd+Shift+P` / `Ctrl+Shift+P`)
+    2. Search "MCP: List Servers"
+    3. Check server status
+    4. View logs for error messages
+    
+    **Claude Desktop:**
+    Check logs at:
+    - macOS: `~/Library/Logs/Claude/mcp*.log`
+    - Windows: `%APPDATA%\Claude\logs\mcp*.log`
+  </Accordion>
+
+  <Accordion title="Restart the client">
+    Sometimes a simple restart resolves startup issues:
+    
+    - **VS Code/Cursor**: Restart the application completely
+    - **Claude Desktop**: Quit and relaunch (not just closing windows)
+  </Accordion>
+</AccordionGroup>
+
+### Module Import Errors
+
+**Error message:**
+```
+ModuleNotFoundError: No module named 'pagerduty_mcp'
+```
+
+**Solution:**
+
+1. **For uvx installations**:
+   ```bash
+   # Clear uvx cache and reinstall
+   uvx --refresh pagerduty-mcp --help
+   ```
+
+2. **For local development**:
+   ```bash
+   cd /path/to/pagerduty-mcp
+   uv sync
+   ```
+
+3. **Verify package is installed**:
+   ```bash
+   uv pip list | grep pagerduty
+   ```
+
+## Docker-Specific Issues
+
+### Docker Image Won't Build
+
+**Error during build:**
+
+Check Docker is running:
+```bash
+docker --version
+docker ps
+```
+
+Build the image:
+```bash
+cd /path/to/pagerduty-mcp
+docker build -t pagerduty-mcp:latest .
+```
+
+### Container Exits Immediately
+
+**Container starts then stops:**
+
+Check logs:
+```bash
+docker logs <container-id>
+```
+
+Common causes:
+- Missing environment variables
+- Invalid API token
+- Incorrect command arguments
+
+**Correct Docker run command:**
+```bash
+docker run -i --rm \
+  -e PAGERDUTY_USER_API_KEY="your-token" \
+  pagerduty-mcp:latest
+```
+
+Note the `-i` flag (interactive) is required for stdio transport.
+
+## Debugging Techniques
+
+### Enable Verbose Logging
+
+For local development, run with debugging enabled:
+
+```bash
+# Set log level
+export MCP_LOG_LEVEL=DEBUG
+
+# Run server
+uv run python -m pagerduty_mcp --enable-write-tools
+```
+
+### Test Tools Manually
+
+You can test tools directly using the MCP inspector:
+
+```bash
+# Install MCP inspector
+npm install -g @modelcontextprotocol/inspector
+
+# Run inspector
+mcp-inspector uvx pagerduty-mcp
+```
+
+This opens a web interface to test tools without an AI client.
+
+### Verify API Connectivity
+
+Test the PagerDuty API directly:
+
+```bash
+# Get your user information
+curl -H "Authorization: Token token=YOUR_TOKEN" \
+  -H "Accept: application/vnd.pagerduty+json;version=2" \
+  https://api.pagerduty.com/users/me
+
+# List incidents
+curl -H "Authorization: Token token=YOUR_TOKEN" \
+  -H "Accept: application/vnd.pagerduty+json;version=2" \
+  https://api.pagerduty.com/incidents
+```
+
+If these work but the MCP server doesn't, the issue is with the server configuration.
+
+### Check Server Health
+
+For local development:
+
+```bash
+# Run tests
+cd /path/to/pagerduty-mcp
+uv run pytest tests/
+
+# Run evals
+uv run python tests/evals/run_tests.py
+```
+
+## Getting Help
+
+### Before Asking for Help
+
+Gather this information:
+
+1. **Version information**:
+   ```bash
+   uvx pagerduty-mcp --version
+   python --version
+   uv --version
+   ```
+
+2. **Configuration** (with tokens redacted):
+   - Your MCP client configuration
+   - Environment variables being set
+   - Command-line arguments
+
+3. **Error messages**:
+   - Complete error output
+   - Client logs
+   - Server logs if available
+
+4. **Steps to reproduce**:
+   - What you're trying to do
+   - Commands or queries you're using
+   - Expected vs actual behavior
+
+### Where to Get Help
+
+<CardGroup cols={2}>
+  <Card title="GitHub Issues" icon="github" href="https://github.com/pagerduty/pagerduty-mcp-server/issues">
+    Report bugs and request features
+  </Card>
+  
+  <Card title="Community Forum" icon="comments" href="https://community.pagerduty.com/">
+    Ask questions and share solutions
+  </Card>
+  
+  <Card title="Security Issues" icon="shield-halved" href="mailto:security@pagerduty.com">
+    Report security vulnerabilities
+  </Card>
+  
+  <Card title="Contributing" icon="code-pull-request" href="https://github.com/pagerduty/pagerduty-mcp-server/blob/main/CONTRIBUTING.md">
+    Contribute fixes and improvements
+  </Card>
+</CardGroup>
+
+## Related Resources
+
+- [Installation Guide](/installation)
+- [Configuration Guide](/configuration/server-options)
+- [Security Best Practices](/guides/security-best-practices)
+- [Tool Reference](/tools/overview)

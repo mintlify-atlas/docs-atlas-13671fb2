@@ -1,0 +1,184 @@
+---
+title: "list_services"
+description: "List all services with optional filtering and pagination"
+icon: "list"
+---
+
+## Overview
+
+Retrieves a paginated list of all services in your PagerDuty account. You can filter services by name or team membership.
+
+<Info>
+This is a **read-only** tool. It retrieves data without modifying your PagerDuty account.
+</Info>
+
+## Parameters
+
+<ParamField path="query_model" type="ServiceQuery" required>
+  Query parameters for filtering and pagination.
+  
+  <Expandable title="ServiceQuery Fields">
+    <ParamField path="query" type="string">
+      Filters the results, showing only the services whose name matches the query string.
+      
+      Example: `"production"`
+    </ParamField>
+    
+    <ParamField path="teams_ids" type="string[]">
+      Filter services by team IDs. Only services associated with these teams will be returned.
+      
+      Example: `["PTEAM1", "PTEAM2"]`
+    </ParamField>
+    
+    <ParamField path="limit" type="integer" default="20">
+      Maximum number of results to return. Must be between 1 and 100.
+      
+      Default: `20`
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+## Response
+
+Returns a `ListResponseModel[Service]` containing an array of services.
+
+<ResponseField name="response" type="Service[]">
+  Array of Service objects matching the query parameters.
+  
+  <Expandable title="Service Object">
+    <ResponseField name="id" type="string">
+      The unique identifier for the service.
+    </ResponseField>
+    
+    <ResponseField name="type" type="string" required>
+      The type of the object (always `"service"`).
+    </ResponseField>
+    
+    <ResponseField name="name" type="string">
+      The name of the service.
+    </ResponseField>
+    
+    <ResponseField name="description" type="string">
+      The description of the service.
+    </ResponseField>
+    
+    <ResponseField name="escalation_policy" type="EscalationPolicyReference" required>
+      Reference to the escalation policy associated with this service.
+      
+      <Expandable title="EscalationPolicyReference">
+        <ResponseField name="id" type="string" required>
+          The ID of the escalation policy.
+        </ResponseField>
+        
+        <ResponseField name="type" type="string" required>
+          The type (always `"escalation_policy_reference"`).
+        </ResponseField>
+        
+        <ResponseField name="summary" type="string">
+          A short summary of the escalation policy (read-only, server-generated).
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+    
+    <ResponseField name="teams" type="TeamReference[]">
+      List of teams associated with the service.
+      
+      <Expandable title="TeamReference">
+        <ResponseField name="id" type="string" required>
+          The ID of the team.
+        </ResponseField>
+        
+        <ResponseField name="type" type="string" required>
+          The type (always `"team_reference"`).
+        </ResponseField>
+        
+        <ResponseField name="summary" type="string">
+          A short summary of the team.
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="response_summary" type="string">
+  A human-readable summary of the response including the count and type of records returned.
+</ResponseField>
+
+## Example Usage
+
+<CodeGroup>
+```text Natural Language
+List all services
+```
+
+```text With Filtering
+Show me all production services
+```
+
+```text Filter by Team
+List services for team PTEAM123
+```
+</CodeGroup>
+
+## Example Response
+
+```json
+{
+  "response": [
+    {
+      "id": "PSERVICE1",
+      "type": "service",
+      "name": "Production Web Service",
+      "description": "Main web application service",
+      "escalation_policy": {
+        "id": "PEPOLICY1",
+        "type": "escalation_policy_reference",
+        "summary": "Production Escalation Policy"
+      },
+      "teams": [
+        {
+          "id": "PTEAM1",
+          "type": "team_reference",
+          "summary": "Engineering Team"
+        }
+      ]
+    },
+    {
+      "id": "PSERVICE2",
+      "type": "service",
+      "name": "Production Database Service",
+      "description": "PostgreSQL database cluster",
+      "escalation_policy": {
+        "id": "PEPOLICY1",
+        "type": "escalation_policy_reference",
+        "summary": "Production Escalation Policy"
+      },
+      "teams": [
+        {
+          "id": "PTEAM1",
+          "type": "team_reference",
+          "summary": "Engineering Team"
+        }
+      ]
+    }
+  ],
+  "response_summary": "ListResponseModel<Service>:\n- Returned 2 record(s) of type 'Service'."
+}
+```
+
+## Related Tools
+
+<CardGroup cols={2}>
+  <Card title="get_service" icon="magnifying-glass" href="/tools/services/get-service">
+    Retrieve a specific service by ID
+  </Card>
+  <Card title="create_service" icon="plus" href="/tools/services/create-service">
+    Create a new service
+  </Card>
+  <Card title="update_service" icon="pen" href="/tools/services/update-service">
+    Update an existing service
+  </Card>
+  <Card title="list_incidents" icon="fire" href="/tools/incidents/list-incidents">
+    List incidents for services
+  </Card>
+</CardGroup>

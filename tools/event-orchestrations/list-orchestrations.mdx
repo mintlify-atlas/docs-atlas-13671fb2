@@ -1,0 +1,126 @@
+---
+title: "list_event_orchestrations"
+description: "List all event orchestrations with optional filtering and sorting"
+---
+
+## Overview
+
+Lists all event orchestrations in your PagerDuty account with optional filtering and pagination.
+
+<Info>
+This is a **read-only** tool that queries your PagerDuty account without making any changes.
+</Info>
+
+## Parameters
+
+<ParamField path="query_model" type="EventOrchestrationQuery" required>
+  Query parameters for filtering and pagination
+  
+  <Expandable title="EventOrchestrationQuery properties">
+    <ParamField path="limit" type="integer" default="25">
+      Number of results per page. Must be between 1 and 100.
+    </ParamField>
+    
+    <ParamField path="offset" type="integer" default="0">
+      Offset to start pagination search results.
+    </ParamField>
+    
+    <ParamField path="sort_by" type="string" default="name:asc">
+      Field to sort results by. Options:
+      - `name:asc` - Sort by name ascending
+      - `name:desc` - Sort by name descending
+      - `routes:asc` - Sort by route count ascending
+      - `routes:desc` - Sort by route count descending
+      - `created_at:asc` - Sort by creation date ascending
+      - `created_at:desc` - Sort by creation date descending
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+## Response
+
+Returns a `ListResponseModel[EventOrchestration]` containing:
+
+<ResponseField name="response" type="array">
+  Array of event orchestration objects
+  
+  <Expandable title="EventOrchestration properties">
+    <ResponseField name="id" type="string">
+      ID of the orchestration (read-only)
+    </ResponseField>
+    
+    <ResponseField name="self" type="string">
+      API URL for this orchestration (read-only)
+    </ResponseField>
+    
+    <ResponseField name="name" type="string">
+      Name of the orchestration
+    </ResponseField>
+    
+    <ResponseField name="description" type="string">
+      Description of the orchestration's purpose
+    </ResponseField>
+    
+    <ResponseField name="team" type="TeamReference">
+      Team that owns this orchestration. If none, only admins have access.
+    </ResponseField>
+    
+    <ResponseField name="integrations" type="array">
+      List of integrations for this orchestration (read-only)
+    </ResponseField>
+    
+    <ResponseField name="routes" type="integer">
+      Number of services being routed to (read-only)
+    </ResponseField>
+    
+    <ResponseField name="created_at" type="datetime">
+      Creation timestamp (read-only)
+    </ResponseField>
+    
+    <ResponseField name="created_by" type="UserReference">
+      User who created the orchestration (read-only)
+    </ResponseField>
+    
+    <ResponseField name="updated_at" type="datetime">
+      Last update timestamp (read-only)
+    </ResponseField>
+    
+    <ResponseField name="updated_by" type="UserReference">
+      User who last updated the orchestration (read-only)
+    </ResponseField>
+    
+    <ResponseField name="version" type="string">
+      Version identifier (read-only)
+    </ResponseField>
+    
+    <ResponseField name="type" type="string">
+      Always "event_orchestration"
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Usage Examples
+
+### List all orchestrations
+
+```
+Show me all event orchestrations
+```
+
+### List orchestrations sorted by route count
+
+```
+List event orchestrations sorted by number of routes descending
+```
+
+### Get orchestrations with pagination
+
+```
+Show me the first 10 event orchestrations
+```
+
+## Related Tools
+
+- [get_event_orchestration](/tools/event-orchestrations/get-orchestration) - Get details for a specific orchestration
+- [get_event_orchestration_router](/tools/event-orchestrations/get-router) - Get router configuration
+- [list_services](/tools/services) - List services that orchestrations can route to

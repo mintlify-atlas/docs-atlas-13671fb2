@@ -1,0 +1,118 @@
+---
+title: "Start Incident Workflow"
+description: "Manually trigger an incident workflow instance on an incident"
+icon: "play"
+---
+
+## Overview
+
+The `start_incident_workflow` tool manually starts a workflow instance for a specific incident. This allows you to execute automated workflow steps on-demand, even if the workflow wasn't triggered automatically.
+
+<Warning>
+This is a **write** tool that creates a workflow instance. You must enable write tools with the `--enable-write-tools` flag to use this tool.
+</Warning>
+
+## Parameters
+
+<ParamField path="workflow_id" type="string" required>
+  The unique identifier of the incident workflow to start.
+  
+  Example: `"PZYX123"`
+</ParamField>
+
+<ParamField path="incident_reference" type="object" required>
+  Reference to the incident on which to start the workflow.
+  
+  <Expandable title="Incident Reference">
+    <ParamField path="id" type="string" required>
+      The ID of the incident
+      
+      Example: `"Q1ABCDEF"`
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField path="id" type="string" optional>
+  An optional identifier to help differentiate between workflow executions. This is useful for tracking or debugging purposes.
+  
+  Example: `"manual-trigger-001"`
+</ParamField>
+
+## Response
+
+Returns the created incident workflow instance.
+
+<ResponseField name="id" type="string">
+  The unique identifier of the incident workflow instance
+</ResponseField>
+
+<ResponseField name="type" type="string">
+  Always returns `"incident_workflow_instance"`
+</ResponseField>
+
+<ResponseField name="incident" type="object">
+  Reference to the incident on which the workflow was started
+  
+  <Expandable title="Incident Reference">
+    <ResponseField name="id" type="string">
+      The ID of the incident
+    </ResponseField>
+    
+    <ResponseField name="type" type="string">
+      Always returns `"incident_reference"`
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Example Usage
+
+<CodeGroup>
+```bash Natural Language
+"Start the major incident workflow for incident Q1ABCDEF"
+```
+
+```bash Manual Trigger
+"Trigger workflow PZYX123 on the current incident"
+```
+
+```bash Execute Automation
+"Run the stakeholder notification workflow on incident Q1ABCDEF"
+```
+</CodeGroup>
+
+## Use Cases
+
+- **Manual workflow execution** - Trigger workflows that weren't automatically started
+- **Test workflows** - Verify workflow behavior on specific incidents
+- **Re-run workflows** - Execute workflows again if needed
+- **Incident response** - Manually kick off escalation or notification workflows
+- **Compliance** - Ensure required workflows are executed on critical incidents
+
+## Response Example
+
+```json
+{
+  "id": "PWINST123",
+  "type": "incident_workflow_instance",
+  "incident": {
+    "id": "Q1ABCDEF",
+    "type": "incident_reference"
+  }
+}
+```
+
+## Important Notes
+
+<Note>
+- Workflows must be enabled to be started manually
+- The incident must exist and be accessible
+- Some workflow actions may only execute once per incident
+- Check workflow step configuration to understand what will happen
+</Note>
+
+## Related Tools
+
+- [List Incident Workflows](/tools/incident-workflows/list-workflows) - View available workflows
+- [Get Incident Workflow](/tools/incident-workflows/get-workflow) - View workflow details before triggering
+- [Get Incident](/tools/incidents/get-incident) - View incident details
+- [Manage Incidents](/tools/incidents/manage-incidents) - Modify incident status or assignment

@@ -1,0 +1,257 @@
+---
+title: "Team Member Management"
+description: "Add, remove, and list team members"
+---
+
+## Overview
+
+Manage team membership in PagerDuty by adding users to teams, removing users from teams, and listing current team members.
+
+This page covers three related tools:
+- `add_team_member` - Add a user to a team
+- `remove_team_member` - Remove a user from a team  
+- `list_team_members` - List all members of a team
+
+---
+
+## list_team_members
+
+Retrieves a list of all users who are members of a specific team.
+
+<Info>
+This is a **read-only** tool that does not modify any data.
+</Info>
+
+### Parameters
+
+<ParamField path="team_id" type="string" required>
+  The ID of the team to list members for.
+</ParamField>
+
+### Response
+
+Returns a list of user references. Each user includes:
+- `id` - The user's PagerDuty ID
+- `summary` - The user's name
+- `html_url` - Link to the user's profile
+
+### Example Usage
+
+```
+Who are the members of team P4B2Z3G?
+```
+
+```
+List all users on the Backend Services team
+```
+
+```
+Show me the Platform Engineering team members
+```
+
+---
+
+## add_team_member
+
+Adds a user to a team with a specific role.
+
+<Warning>
+This is a **write tool** that requires the `--enable-write-tools` flag to be enabled.
+</Warning>
+
+### Parameters
+
+<ParamField path="team_id" type="string" required>
+  The ID of the team to add the user to.
+</ParamField>
+
+<ParamField body="user_id" type="string" required>
+  The ID of the user to add to the team.
+</ParamField>
+
+<ParamField body="role" type="string" default="manager">
+  The role to assign to the user. Options:
+  - `manager` - Full team management permissions
+  - `responder` - Can respond to incidents for team services
+  - `observer` - Read-only access to team resources
+</ParamField>
+
+### Response
+
+Returns a confirmation message that the user was successfully added to the team.
+
+### Example Usage
+
+```
+Add user U4J8K2L to team P4B2Z3G as a responder
+```
+
+```
+Add Alice to the Backend Services team with manager role
+```
+
+```
+Make user U123 an observer on the Platform team
+```
+
+---
+
+## remove_team_member
+
+Removes a user from a team.
+
+<Warning>
+This is a **write tool** that requires the `--enable-write-tools` flag to be enabled.
+</Warning>
+
+### Parameters
+
+<ParamField path="team_id" type="string" required>
+  The ID of the team to remove the user from.
+</ParamField>
+
+<ParamField path="user_id" type="string" required>
+  The ID of the user to remove from the team.
+</ParamField>
+
+### Response
+
+Returns a confirmation message that the user was successfully removed from the team.
+
+### Example Usage
+
+```
+Remove user U4J8K2L from team P4B2Z3G
+```
+
+```
+Take Alice off the Backend Services team
+```
+
+```
+Remove user U123 from the Platform team
+```
+
+---
+
+## Understanding Team Roles
+
+Team roles determine what permissions users have for team-owned resources:
+
+### Manager
+
+- View and modify team settings
+- Add or remove team members
+- Manage team-owned services and schedules
+- Assign services to the team
+- Full access to team resources
+
+**Use for:** Team leads, managers, and administrators
+
+### Responder
+
+- Respond to incidents on team services
+- View team services and schedules
+- Participate in on-call rotations
+- Cannot modify team settings or membership
+
+**Use for:** Engineers and team members who handle incidents
+
+### Observer
+
+- Read-only access to team resources
+- View team services, schedules, and members
+- Cannot respond to incidents or modify settings
+
+**Use for:** Stakeholders, managers from other teams, auditors
+
+<Note>
+Roles are team-specific. A user can be a manager on one team and an observer on another.
+</Note>
+
+## Common Use Cases
+
+### Onboarding New Team Members
+
+1. List current members to understand team composition
+2. Add the new user with the appropriate role
+3. Verify the addition by listing members again
+
+### Team Reorganization
+
+1. List members of both source and destination teams
+2. Remove users from the old team
+3. Add users to the new team with appropriate roles
+
+### Access Auditing
+
+1. List members of all teams
+2. Review roles and permissions
+3. Remove users who no longer need access
+4. Adjust roles for users with changed responsibilities
+
+### Role Changes
+
+To change a user's role on a team:
+1. Remove the user from the team
+2. Add them back with the new role
+
+## Important Notes
+
+<Warning>
+Removing a user from a team does not delete the user from PagerDuty. It only removes their team membership.
+</Warning>
+
+<Note>
+Users can be members of multiple teams simultaneously with different roles on each team.
+</Note>
+
+<Tip>
+Before removing a user, check if they are in any on-call schedules or escalation policies for team services. You may need to update those first to avoid coverage gaps.
+</Tip>
+
+## Impact of Membership Changes
+
+### Adding a Member
+
+- User gains access to team resources based on their role
+- User can be added to team schedules and escalation policies
+- User sees team services and incidents in their PagerDuty view
+- No automatic addition to schedules or on-call rotations
+
+### Removing a Member
+
+- User loses access to team resources
+- User remains in any schedules or escalation policies (must be removed separately)
+- User's historical incident data is preserved
+- On-call assignments involving this user continue until modified
+
+<Warning>
+Removing a team member does NOT automatically remove them from:
+- On-call schedules
+- Escalation policies
+- Service assignments
+
+You must update these separately if needed.
+</Warning>
+
+## Related Tools
+
+<CardGroup cols={2}>
+  <Card title="list_teams" icon="list" href="/tools/teams/list-teams">
+    View all teams
+  </Card>
+  <Card title="get_team" icon="users" href="/tools/teams/get-team">
+    Get team details
+  </Card>
+  <Card title="list_users" icon="user" href="/tools/users/list-users">
+    List all users in PagerDuty
+  </Card>
+  <Card title="list_schedules" icon="calendar" href="/tools/schedules/list-schedules">
+    View team schedules
+  </Card>
+</CardGroup>
+
+## See Also
+
+- [Write Mode Configuration](/configuration/write-mode) - How to enable write tools

@@ -1,0 +1,434 @@
+---
+title: "Related, Past, and Outlier Incidents"
+description: "Discover patterns and relationships using Event Intelligence"
+---
+
+<Info>
+**Tools:** `get_related_incidents`, `get_past_incidents`, `get_outlier_incident`
+
+**Category:** Incidents
+
+**Mode:** Read-only
+
+**Requires:** Event Intelligence package or Digital Operations plan
+</Info>
+
+## Overview
+
+These advanced incident analysis tools leverage PagerDuty's Event Intelligence capabilities to help you identify patterns, find similar past incidents, and detect anomalies. This information is invaluable for faster incident resolution and understanding incident trends.
+
+<Warning>
+**Event Intelligence Required**
+
+These tools require the Event Intelligence package or Digital Operations plan. If your account doesn't have these features, these tools will return empty results or errors.
+</Warning>
+
+---
+
+## get_related_incidents
+
+Find incidents that are currently happening and are related to the specified incident.
+
+### Description
+
+Returns the 20 most recent related incidents that are impacting other responders and services. Related incidents are identified through machine learning analysis of incident metadata, service dependencies, and timing patterns.
+
+### Parameters
+
+<ParamField path="incident_id" type="string" required>
+  The ID of the incident to find related incidents for.
+  
+  **Example:** `"Q1234567890ABCDE"`
+</ParamField>
+
+<ParamField path="additional_details" type="list[string]" optional>
+  Additional attributes to include in the response.
+  
+  **Allowed values:**
+  - `incident` - Include full incident details
+  
+  **Example:** `["incident"]`
+</ParamField>
+
+### Usage Examples
+
+#### Find related incidents
+
+```python
+{
+  "incident_id": "Q1234567890ABCDE"
+}
+```
+
+#### Find related incidents with full details
+
+```python
+{
+  "incident_id": "Q1234567890ABCDE",
+  "additional_details": ["incident"]
+}
+```
+
+### Response Format
+
+Returns a `RelatedIncidentsResponse` object.
+
+<ResponseField name="related_incidents" type="list[RelatedIncident]">
+  List of related incidents.
+  
+  <ResponseField name="incident" type="PastIncidentReference">
+    Reference to the related incident.
+    
+    <ResponseField name="id" type="string">
+      The incident ID
+    </ResponseField>
+    
+    <ResponseField name="title" type="string">
+      The incident title
+    </ResponseField>
+    
+    <ResponseField name="created_at" type="datetime">
+      When the incident was created
+    </ResponseField>
+    
+    <ResponseField name="self" type="string">
+      URL to access the incident
+    </ResponseField>
+  </ResponseField>
+  
+  <ResponseField name="relationships" type="list[Relationship]">
+    List of relationship types to the parent incident.
+    
+    <ResponseField name="type" type="string">
+      Relationship type (e.g., `machine_learning_inferred`, `service_dependency`)
+    </ResponseField>
+    
+    <ResponseField name="metadata" type="dict">
+      Additional metadata about the relationship (structure varies by type)
+    </ResponseField>
+  </ResponseField>
+</ResponseField>
+
+### Use Cases
+
+<Tip>
+**When to use related incidents:**
+
+- **During major incidents** - Identify if other systems are affected
+- **Investigating cascading failures** - Find upstream/downstream impacts  
+- **Coordinating response** - See what other teams are working on
+- **Understanding scope** - Determine if issues are isolated or widespread
+- **Post-incident review** - Map out full incident timeline across services
+</Tip>
+
+---
+
+## get_past_incidents
+
+Find historical incidents similar to the current incident.
+
+### Description
+
+Returns incidents from the past 6 months that have similar metadata and were generated on the same service. By default, returns 50 past incidents with similarity scores. This helps you learn from previous resolutions and identify recurring patterns.
+
+### Parameters
+
+<ParamField path="incident_id" type="string" required>
+  The ID of the incident to find past incidents for.
+  
+  **Example:** `"Q1234567890ABCDE"`
+</ParamField>
+
+<ParamField path="limit" type="integer" default="50">
+  Number of results to return. Must be between 1 and 999.
+  
+  **Example:** `100`
+</ParamField>
+
+<ParamField path="total" type="boolean" default="true">
+  Include the total count of past incidents in the response.
+  
+  **Example:** `true`
+</ParamField>
+
+### Usage Examples
+
+#### Find past similar incidents
+
+```python
+{
+  "incident_id": "Q1234567890ABCDE"
+}
+```
+
+#### Get more past incidents
+
+```python
+{
+  "incident_id": "Q1234567890ABCDE",
+  "limit": 100,
+  "total": true
+}
+```
+
+### Response Format
+
+Returns a `PastIncidentsResponse` object.
+
+<ResponseField name="past_incidents" type="list[PastIncident]">
+  List of past incidents sorted by similarity.
+  
+  <ResponseField name="incident" type="PastIncidentReference">
+    Reference to the past incident.
+    
+    <ResponseField name="id" type="string">
+      The incident ID
+    </ResponseField>
+    
+    <ResponseField name="title" type="string">
+      The incident title
+    </ResponseField>
+    
+    <ResponseField name="created_at" type="datetime">
+      When the incident was created
+    </ResponseField>
+    
+    <ResponseField name="self" type="string">
+      URL to access the incident
+    </ResponseField>
+  </ResponseField>
+  
+  <ResponseField name="score" type="float">
+    Similarity score between 0 and 1, where higher scores indicate greater similarity.
+  </ResponseField>
+</ResponseField>
+
+<ResponseField name="total" type="integer" optional>
+  Total number of past incidents found (if `total` parameter was true).
+</ResponseField>
+
+<ResponseField name="limit" type="integer">
+  The limit that was applied to the results.
+</ResponseField>
+
+### Use Cases
+
+<Tip>
+**When to use past incidents:**
+
+- **New responders on-call** - Quickly find how similar issues were resolved before
+- **Investigating unfamiliar issues** - Learn from past resolutions
+- **Identifying recurring problems** - Spot patterns that need permanent fixes
+- **Estimating resolution time** - See how long similar incidents took
+- **Finding relevant runbooks** - Check notes from past similar incidents
+- **Post-incident analysis** - Compare with historical data
+</Tip>
+
+---
+
+## get_outlier_incident
+
+Identify if an incident is an outlier for its service.
+
+### Description
+
+Analyzes an incident to determine if it deviates from expected patterns for the same service. Outlier incidents are rare or unusual compared to the normal incident patterns, which may indicate a novel issue requiring different handling.
+
+### Parameters
+
+<ParamField path="incident_id" type="string" required>
+  The ID of the incident to analyze.
+  
+  **Example:** `"Q1234567890ABCDE"`
+</ParamField>
+
+<ParamField path="since" type="datetime" optional>
+  The start of the date range to analyze. Maximum range is 6 months.
+  
+  **Example:** `"2024-01-01T00:00:00Z"`
+</ParamField>
+
+### Usage Examples
+
+#### Check if incident is an outlier
+
+```python
+{
+  "incident_id": "Q1234567890ABCDE"
+}
+```
+
+#### Check outlier status with date range
+
+```python
+{
+  "incident_id": "Q1234567890ABCDE",
+  "since": "2024-01-01T00:00:00Z"
+}
+```
+
+### Response Format
+
+Returns an `OutlierIncidentResponse` object.
+
+<ResponseField name="outlier_incident" type="OutlierIncident">
+  Outlier incident analysis results.
+  
+  <ResponseField name="incident" type="OutlierIncidentReference">
+    The incident that was analyzed.
+    
+    <ResponseField name="id" type="string">
+      The incident ID
+    </ResponseField>
+    
+    <ResponseField name="title" type="string">
+      The incident title
+    </ResponseField>
+    
+    <ResponseField name="created_at" type="datetime">
+      When the incident was created
+    </ResponseField>
+    
+    <ResponseField name="occurrence" type="Occurrence">
+      Occurrence pattern information.
+      
+      <ResponseField name="count" type="integer">
+        Number of times this pattern has occurred
+      </ResponseField>
+      
+      <ResponseField name="frequency" type="float">
+        Frequency of occurrence
+      </ResponseField>
+      
+      <ResponseField name="category" type="string">
+        Occurrence category (e.g., "rare", "common")
+      </ResponseField>
+      
+      <ResponseField name="since" type="datetime">
+        Start of analysis time range
+      </ResponseField>
+      
+      <ResponseField name="until" type="datetime">
+        End of analysis time range
+      </ResponseField>
+    </ResponseField>
+  </ResponseField>
+  
+  <ResponseField name="incident_template" type="IncidentTemplate">
+    Pattern template information.
+    
+    <ResponseField name="id" type="string">
+      Template ID
+    </ResponseField>
+    
+    <ResponseField name="cluster_id" type="string">
+      Cluster ID for grouping similar incidents
+    </ResponseField>
+    
+    <ResponseField name="mined_text" type="string">
+      The mined text pattern that characterizes this incident type
+    </ResponseField>
+  </ResponseField>
+</ResponseField>
+
+### Use Cases
+
+<Tip>
+**When to use outlier incidents:**
+
+- **Triaging incidents** - Prioritize unusual incidents that may indicate new problems
+- **Anomaly detection** - Identify incidents that don't follow normal patterns
+- **Investigating unknowns** - Focus attention on truly novel issues
+- **Resource allocation** - Assign experienced responders to outlier incidents
+- **Pattern analysis** - Track when new incident patterns emerge
+- **Capacity planning** - Understand what percentage of incidents are unique
+</Tip>
+
+---
+
+## Common Errors
+
+<Warning>
+**Event Intelligence not enabled**
+
+If your account doesn't have Event Intelligence:
+
+```
+402 Payment Required: Event Intelligence features require an Event Intelligence package or Digital Operations plan
+```
+
+**Solution:** Contact PagerDuty to upgrade your plan.
+</Warning>
+
+<Warning>
+**Incident not found**
+
+```
+404 Not Found: Incident not found
+```
+
+**Solution:** Verify the incident ID is correct.
+</Warning>
+
+<Warning>
+**Date range too large**
+
+For `get_outlier_incident`:
+
+```
+400 Bad Request: Date range cannot exceed 6 months
+```
+
+**Solution:** Use a `since` date within the last 6 months.
+</Warning>
+
+---
+
+## Combining Tools for Incident Analysis
+
+These tools work well together for comprehensive incident analysis:
+
+```python
+# 1. Get the incident details
+get_incident({"incident_id": "Q1234567890ABCDE"})
+
+# 2. Check if it's an outlier
+get_outlier_incident({"incident_id": "Q1234567890ABCDE"})
+
+# 3. Find related ongoing incidents
+get_related_incidents({"incident_id": "Q1234567890ABCDE"})
+
+# 4. Find similar past incidents for resolution hints
+get_past_incidents({"incident_id": "Q1234567890ABCDE", "limit": 10})
+```
+
+---
+
+## Related Tools
+
+<CardGroup cols={2}>
+  <Card title="get_incident" icon="magnifying-glass" href="/tools/incidents/get-incident">
+    Get the main incident details
+  </Card>
+  <Card title="list_incident_notes" icon="comment" href="/tools/incidents/add-note">
+    Check notes from past similar incidents
+  </Card>
+  <Card title="manage_incidents" icon="sliders" href="/tools/incidents/manage-incidents">
+    Take action on related incidents
+  </Card>
+  <Card title="list_incidents" icon="list" href="/tools/incidents/list-incidents">
+    Find other recent incidents
+  </Card>
+</CardGroup>
+
+## Source Reference
+
+**Functions:**
+- `get_related_incidents` in `pagerduty_mcp/tools/incidents.py:280`
+- `get_past_incidents` in `pagerduty_mcp/tools/incidents.py:259`
+- `get_outlier_incident` in `pagerduty_mcp/tools/incidents.py:239`
+
+**Models:** 
+- `RelatedIncidentsQuery`, `RelatedIncidentsResponse` in `pagerduty_mcp/models/incidents.py`
+- `PastIncidentsQuery`, `PastIncidentsResponse` in `pagerduty_mcp/models/incidents.py`
+- `OutlierIncidentQuery`, `OutlierIncidentResponse` in `pagerduty_mcp/models/incidents.py`

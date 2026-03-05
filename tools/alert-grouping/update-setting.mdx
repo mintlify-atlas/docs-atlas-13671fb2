@@ -1,0 +1,190 @@
+---
+title: "Update Alert Grouping Setting"
+description: "Modify an existing alert grouping setting"
+icon: "pen-to-square"
+---
+
+## Overview
+
+The `update_alert_grouping_setting` tool modifies an existing alert grouping setting, allowing you to change how alerts are grouped into incidents for specific services.
+
+<Warning>
+This is a **write** tool that modifies an existing configuration in your PagerDuty account. You must enable write tools with the `--enable-write-tools` flag to use this tool.
+</Warning>
+
+## Parameters
+
+<ParamField path="setting_id" type="string" required>
+  The unique identifier of the alert grouping setting to update.
+  
+  Example: `"PAGRSET1"`
+</ParamField>
+
+<ParamField path="name" type="string" optional>
+  A short-form name for labeling the alert grouping setting.
+  
+  Example: `"Updated Production Grouping"`
+</ParamField>
+
+<ParamField path="description" type="string" optional>
+  A description providing more information about the alert grouping setting.
+  
+  Example: `"Updated to group by host and service"`
+</ParamField>
+
+<ParamField path="type" type="string" required>
+  The type of alert grouping configuration. Must be one of:
+  - `content_based` - Group by matching field values
+  - `content_based_intelligent` - Intelligent grouping with field matching
+  - `intelligent` - AI-powered intelligent grouping
+  - `time` - Group alerts within a time window
+  
+  Example: `"content_based"`
+</ParamField>
+
+<ParamField path="config" type="object" required>
+  The configuration for the alert grouping setting. Structure varies by type. See [Create Alert Grouping Setting](/tools/alert-grouping/create-setting) for detailed configuration options.
+  
+  Example for content-based:
+  ```json
+  {
+    "aggregate": "all",
+    "fields": ["host", "service"],
+    "time_window": 1800
+  }
+  ```
+</ParamField>
+
+<ParamField path="services" type="array" required>
+  Array of service references that this alert grouping setting applies to. Note: `content_based_intelligent` type allows only one service.
+  
+  Example:
+  ```json
+  [{"id": "PSVC123", "type": "service_reference"}]
+  ```
+</ParamField>
+
+## Response
+
+Returns the updated alert grouping setting object.
+
+<ResponseField name="id" type="string">
+  The unique identifier of the alert grouping setting
+</ResponseField>
+
+<ResponseField name="type" type="string">
+  The type of alert grouping configuration
+</ResponseField>
+
+<ResponseField name="name" type="string">
+  The name of the alert grouping setting
+</ResponseField>
+
+<ResponseField name="description" type="string">
+  The description of the alert grouping setting
+</ResponseField>
+
+<ResponseField name="config" type="object">
+  The configuration for the alert grouping setting
+</ResponseField>
+
+<ResponseField name="services" type="array">
+  Array of service references
+</ResponseField>
+
+<ResponseField name="created_at" type="datetime">
+  The ISO8601 date/time when the setting was created
+</ResponseField>
+
+<ResponseField name="updated_at" type="datetime">
+  The ISO8601 date/time when the setting was last updated (reflects this update)
+</ResponseField>
+
+## Example Usage
+
+<CodeGroup>
+```bash Natural Language
+"Update alert grouping setting PAGRSET1 to use a 30 minute time window"
+```
+
+```bash Change Fields
+"Modify setting PAGRSET1 to group by host instead of component"
+```
+
+```bash Update Type
+"Change alert grouping PAGRSET1 to use intelligent grouping"
+```
+</CodeGroup>
+
+## Use Cases
+
+- **Optimize grouping** - Adjust time windows or fields based on alert patterns
+- **Fix configuration** - Correct misconfigured grouping rules
+- **Adapt to changes** - Update grouping as alert structure evolves
+- **Test improvements** - Experiment with different grouping strategies
+- **Service changes** - Update which services use the grouping setting
+
+## Update Examples
+
+### Update Time Window
+```json
+{
+  "setting_id": "PAGRSET1",
+  "type": "content_based",
+  "config": {
+    "aggregate": "all",
+    "fields": ["component"],
+    "time_window": 1800
+  },
+  "services": [{"id": "PSVC123"}]
+}
+```
+
+### Change to Intelligent Grouping
+```json
+{
+  "setting_id": "PAGRSET1",
+  "type": "intelligent",
+  "config": {
+    "time_window": 0,
+    "iag_fields": ["summary", "description"]
+  },
+  "services": [{"id": "PSVC123"}]
+}
+```
+
+### Update Grouping Fields
+```json
+{
+  "setting_id": "PAGRSET1",
+  "type": "content_based",
+  "config": {
+    "aggregate": "any",
+    "fields": ["host", "service", "environment"],
+    "time_window": 3600
+  },
+  "services": [{"id": "PSVC123"}]
+}
+```
+
+## Important Notes
+
+<Warning>
+- Updates replace the entire configuration - include all required fields
+- Changes take effect immediately for new alerts
+- Existing incidents are not affected by the update
+- The `content_based_intelligent` type supports only **one service**
+- Setting `time_window` to 0 uses PagerDuty's recommended time window
+- Ensure field names match your alert structure
+</Warning>
+
+<Note>
+Before updating, consider reviewing the current configuration with [Get Alert Grouping Setting](/tools/alert-grouping/get-setting) to understand the existing setup.
+</Note>
+
+## Related Tools
+
+- [Get Alert Grouping Setting](/tools/alert-grouping/get-setting) - View current configuration before updating
+- [List Alert Grouping Settings](/tools/alert-grouping/list-settings) - View all settings
+- [Create Alert Grouping Setting](/tools/alert-grouping/create-setting) - Create a new setting
+- [Delete Alert Grouping Setting](/tools/alert-grouping/delete-setting) - Remove a setting

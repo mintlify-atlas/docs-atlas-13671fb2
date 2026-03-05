@@ -1,0 +1,137 @@
+---
+title: "List Incident Workflows"
+description: "Retrieve a list of incident workflows with optional filtering"
+icon: "list"
+---
+
+## Overview
+
+The `list_incident_workflows` tool retrieves all incident workflows configured in your PagerDuty account. Incident workflows are automated sequences of actions that execute when triggered, helping teams standardize incident response processes.
+
+<Note>
+This is a **read-only** tool that does not modify any data in your PagerDuty account.
+</Note>
+
+## Parameters
+
+<ParamField path="query" type="string" optional>
+  Filter workflows by name. Performs a partial match search.
+  
+  Example: `"notification"`
+</ParamField>
+
+<ParamField path="include" type="array" optional>
+  Include additional details in the response. Available options:
+  - `steps` - Include the workflow steps configuration
+  - `team` - Include team information
+  
+  Example: `["steps", "team"]`
+</ParamField>
+
+<ParamField path="limit" type="integer" optional default="100">
+  Maximum number of results to return. Must be between 1 and 100.
+  
+  Example: `50`
+</ParamField>
+
+## Response
+
+Returns a list of incident workflow objects.
+
+<ResponseField name="response" type="array">
+  Array of incident workflow objects
+  
+  <Expandable title="IncidentWorkflow Object">
+    <ResponseField name="id" type="string">
+      The unique identifier of the incident workflow
+    </ResponseField>
+    
+    <ResponseField name="type" type="string">
+      Always returns `"incident_workflow"`
+    </ResponseField>
+    
+    <ResponseField name="name" type="string">
+      A descriptive name for the incident workflow
+    </ResponseField>
+    
+    <ResponseField name="description" type="string">
+      A description of what the incident workflow does
+    </ResponseField>
+    
+    <ResponseField name="is_enabled" type="boolean">
+      Indicates whether the incident workflow is enabled or not
+    </ResponseField>
+    
+    <ResponseField name="team" type="object">
+      Team reference. If specified, workflow edit permissions are scoped to members of this team
+    </ResponseField>
+    
+    <ResponseField name="steps" type="array">
+      The ordered list of steps that execute sequentially as part of the workflow (only included if requested via `include` parameter)
+      
+      <Expandable title="Step Object">
+        <ResponseField name="id" type="string">
+          Unique identifier for the step
+        </ResponseField>
+        
+        <ResponseField name="name" type="string">
+          A descriptive name for the step
+        </ResponseField>
+        
+        <ResponseField name="description" type="string">
+          A description of the action performed by the step
+        </ResponseField>
+        
+        <ResponseField name="action_configuration" type="object">
+          Configuration of the automated action executed by this step
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+    
+    <ResponseField name="summary" type="string">
+      A short-form, server-generated description
+    </ResponseField>
+    
+    <ResponseField name="self" type="string">
+      The API URL at which this workflow is accessible
+    </ResponseField>
+    
+    <ResponseField name="html_url" type="string">
+      The URL at which this workflow is accessible in the PagerDuty web UI
+    </ResponseField>
+    
+    <ResponseField name="created_at" type="datetime">
+      The timestamp this incident workflow was created
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Example Usage
+
+<CodeGroup>
+```bash Natural Language
+"Show me all incident workflows"
+```
+
+```bash Filtered Search
+"List workflows containing 'notification' in the name"
+```
+
+```bash With Steps
+"Get all incident workflows with their steps"
+```
+</CodeGroup>
+
+## Use Cases
+
+- **Audit workflows** - Review all automated workflows configured in your account
+- **Discover automation** - Find workflows by name or description
+- **Review workflow steps** - Examine the actions performed by each workflow
+- **Check team permissions** - See which teams can edit specific workflows
+- **Verify workflow status** - Identify which workflows are currently enabled
+
+## Related Tools
+
+- [Get Incident Workflow](/tools/incident-workflows/get-workflow) - Retrieve a specific workflow by ID
+- [Start Incident Workflow](/tools/incident-workflows/start-workflow) - Manually trigger a workflow on an incident
+- [List Incidents](/tools/incidents/list-incidents) - View incidents that may trigger workflows

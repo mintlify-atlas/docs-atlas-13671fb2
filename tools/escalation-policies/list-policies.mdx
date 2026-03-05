@@ -1,0 +1,160 @@
+---
+title: "List Escalation Policies"
+description: "Retrieve a list of escalation policies with optional filtering"
+icon: "list"
+---
+
+## Overview
+
+The `list_escalation_policies` tool retrieves all escalation policies in your PagerDuty account with optional filtering capabilities. Escalation policies determine how incidents are escalated through various users and schedules when not acknowledged.
+
+<Note>
+This is a **read-only** tool that does not modify any data in your PagerDuty account.
+</Note>
+
+## Parameters
+
+<ParamField path="query" type="string" optional>
+  Filter escalation policies by name or description. Performs a partial match search.
+  
+  Example: `"production"`
+</ParamField>
+
+<ParamField path="user_ids" type="array" optional>
+  Filter escalation policies by user IDs. Only returns policies that include the specified users in their escalation rules.
+  
+  Example: `["P123ABC", "P456DEF"]`
+</ParamField>
+
+<ParamField path="team_ids" type="array" optional>
+  Filter escalation policies by team IDs. Only returns policies associated with the specified teams.
+  
+  Example: `["TEAM123", "TEAM456"]`
+</ParamField>
+
+<ParamField path="include" type="array" optional>
+  Include additional details in the response. Available options:
+  - `services` - Include services using this escalation policy
+  - `teams` - Include teams associated with this escalation policy
+  
+  Example: `["services", "teams"]`
+</ParamField>
+
+<ParamField path="limit" type="integer" optional default="25">
+  Maximum number of results to return. Must be between 1 and 100.
+  
+  Example: `50`
+</ParamField>
+
+## Response
+
+Returns a list of escalation policy objects.
+
+<ResponseField name="response" type="array">
+  Array of escalation policy objects
+  
+  <Expandable title="EscalationPolicy Object">
+    <ResponseField name="id" type="string">
+      The unique identifier of the escalation policy
+    </ResponseField>
+    
+    <ResponseField name="type" type="string">
+      Always returns `"escalation_policy"`
+    </ResponseField>
+    
+    <ResponseField name="summary" type="string">
+      A short-form description of the escalation policy
+    </ResponseField>
+    
+    <ResponseField name="name" type="string">
+      The name of the escalation policy
+    </ResponseField>
+    
+    <ResponseField name="description" type="string">
+      The description of the escalation policy
+    </ResponseField>
+    
+    <ResponseField name="escalation_rules" type="array">
+      The ordered list of escalation rules for the policy
+      
+      <Expandable title="EscalationRule Object">
+        <ResponseField name="id" type="string">
+          The unique identifier of the escalation rule
+        </ResponseField>
+        
+        <ResponseField name="escalation_delay_in_minutes" type="integer">
+          The number of minutes before an unacknowledged incident escalates away from this rule
+        </ResponseField>
+        
+        <ResponseField name="targets" type="array">
+          The targets (users or schedules) an incident should be assigned to upon reaching this rule
+        </ResponseField>
+        
+        <ResponseField name="escalation_rule_assignment_strategy" type="string">
+          The strategy used to assign the escalation rule. Either `"round_robin"` or `"assign_to_everyone"`
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+    
+    <ResponseField name="num_loops" type="integer">
+      The number of times the escalation policy will repeat after reaching the end of its escalation
+    </ResponseField>
+    
+    <ResponseField name="on_call_handoff_notifications" type="string">
+      How on-call handoff notifications will be sent. Either `"if_has_services"` or `"always"`
+    </ResponseField>
+    
+    <ResponseField name="services" type="array">
+      The services using this escalation policy (only included if requested via `include` parameter)
+    </ResponseField>
+    
+    <ResponseField name="teams" type="array">
+      The teams associated with this escalation policy (only included if requested via `include` parameter)
+    </ResponseField>
+    
+    <ResponseField name="self_url" type="string">
+      The API URL at which this escalation policy is accessible
+    </ResponseField>
+    
+    <ResponseField name="html_url" type="string">
+      The URL at which this escalation policy is accessible in the PagerDuty web UI
+    </ResponseField>
+    
+    <ResponseField name="created_at" type="datetime">
+      The date/time when this escalation policy was created
+    </ResponseField>
+    
+    <ResponseField name="updated_at" type="datetime">
+      The date/time when this escalation policy was last updated
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Example Usage
+
+<CodeGroup>
+```bash Natural Language
+"Show me all escalation policies for the production team"
+```
+
+```bash Filtered Search
+"List escalation policies that include user P123ABC"
+```
+
+```bash With Details
+"Get all escalation policies with their associated services"
+```
+</CodeGroup>
+
+## Use Cases
+
+- **Audit escalation paths** - Review how incidents are escalated across your organization
+- **Find policies by team** - Identify escalation policies associated with specific teams
+- **Discover user involvement** - See which escalation policies include specific users
+- **Review policy configuration** - Examine escalation timing and loop settings
+
+## Related Tools
+
+- [Get Escalation Policy](/tools/escalation-policies/get-policy) - Retrieve a specific escalation policy by ID
+- [List On-Calls](/tools/on-call/list-oncalls) - See who is currently on-call
+- [List Services](/tools/services/list-services) - View services and their escalation policies

@@ -1,0 +1,123 @@
+---
+title: "list_schedules"
+description: "List schedules with optional filtering"
+---
+
+## Overview
+
+Retrieves a list of on-call schedules from your PagerDuty account with support for filtering by name, team, user, and other criteria.
+
+<Info>
+This is a **read-only** tool that does not modify any data in your PagerDuty account.
+</Info>
+
+## Parameters
+
+All parameters are optional and can be combined to filter results:
+
+<ParamField query="query" type="string">
+  Filter schedules by name or description. Partial matches are supported.
+</ParamField>
+
+<ParamField query="team_ids" type="array of strings">
+  Filter schedules by team IDs. Returns schedules associated with the specified teams.
+</ParamField>
+
+<ParamField query="user_ids" type="array of strings">
+  Filter schedules by user IDs. Returns schedules that include the specified users.
+</ParamField>
+
+<ParamField query="include" type="array of strings">
+  Include additional details in the response. Supported values:
+  - `schedule_layers` - Include the schedule layer details
+</ParamField>
+
+<ParamField query="limit" type="integer" default="25">
+  Maximum number of schedules to return. Must be between 1 and 100.
+</ParamField>
+
+## Response
+
+Returns a list of schedule objects. Each schedule includes:
+
+<ResponseField name="id" type="string">
+  The unique identifier for the schedule
+</ResponseField>
+
+<ResponseField name="name" type="string">
+  The name of the schedule
+</ResponseField>
+
+<ResponseField name="summary" type="string">
+  A short description of the schedule
+</ResponseField>
+
+<ResponseField name="description" type="string">
+  The full description of the schedule
+</ResponseField>
+
+<ResponseField name="time_zone" type="string">
+  The time zone of the schedule (IANA format, e.g., "America/New_York")
+</ResponseField>
+
+<ResponseField name="html_url" type="string">
+  The URL to view the schedule in PagerDuty
+</ResponseField>
+
+<ResponseField name="users" type="array">
+  List of users associated with this schedule
+</ResponseField>
+
+<ResponseField name="teams" type="array">
+  List of teams associated with this schedule
+</ResponseField>
+
+<ResponseField name="schedule_layers" type="array">
+  List of schedule layers (only included if requested via the `include` parameter)
+</ResponseField>
+
+## Example Usage
+
+### List all schedules
+```
+Show me all on-call schedules
+```
+
+### Filter by team
+```
+List schedules for the infrastructure team
+```
+
+### Search by name
+```
+Find schedules with "production" in the name
+```
+
+### Get schedules with layer details
+```
+Show me all schedules including their layer information
+```
+
+## Common Use Cases
+
+- **Audit schedules** - Review all on-call schedules configured in your account
+- **Find specific schedules** - Locate schedules by team, user, or name
+- **Team planning** - Identify which teams have on-call coverage
+- **Schedule analysis** - Examine schedule configurations and rotations
+
+## Related Tools
+
+<CardGroup cols={2}>
+  <Card title="get_schedule" icon="calendar" href="/tools/schedules/get-schedule">
+    Get details for a specific schedule
+  </Card>
+  <Card title="list_oncalls" icon="bell" href="/tools/schedules/list-oncalls">
+    Check who is currently on-call
+  </Card>
+  <Card title="create_schedule" icon="plus" href="/tools/schedules/create-schedule">
+    Create a new schedule (write mode)
+  </Card>
+  <Card title="update_schedule" icon="pen" href="/tools/schedules/update-schedule">
+    Modify an existing schedule (write mode)
+  </Card>
+</CardGroup>

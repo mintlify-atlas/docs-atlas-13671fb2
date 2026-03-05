@@ -1,0 +1,199 @@
+---
+title: "Get Status Page Post"
+description: "Retrieve details of a specific status page post"
+icon: "newspaper"
+---
+
+## Overview
+
+The `get_status_page_post` tool retrieves detailed information about a specific status page post, including its title, type, timeline, and updates.
+
+<Note>
+This is a **read-only** tool that does not modify any data in your PagerDuty account.
+</Note>
+
+## Parameters
+
+<ParamField path="status_page_id" type="string" required>
+  The unique identifier of the status page.
+  
+  Example: `"PSTATUS1"`
+</ParamField>
+
+<ParamField path="post_id" type="string" required>
+  The unique identifier of the status page post.
+  
+  Example: `"POST123"`
+</ParamField>
+
+<ParamField path="include" type="array" optional>
+  Include additional related resources in the response. Options:
+  - `status_page_post_update` - Include all post updates
+  
+  Example: `["status_page_post_update"]`
+</ParamField>
+
+## Response
+
+Returns a detailed status page post object.
+
+<ResponseField name="id" type="string">
+  The unique identifier of the status page post
+</ResponseField>
+
+<ResponseField name="type" type="string">
+  Always returns `"status_page_post"`
+</ResponseField>
+
+<ResponseField name="self" type="string">
+  The API URL at which this post is accessible
+</ResponseField>
+
+<ResponseField name="post_type" type="string">
+  The type of post. Options:
+  - `incident` - An unplanned service disruption
+  - `maintenance` - A planned maintenance window
+</ResponseField>
+
+<ResponseField name="status_page" type="object">
+  Reference to the status page this post belongs to
+  
+  <Expandable title="Status Page Reference">
+    <ResponseField name="id" type="string">
+      The status page ID
+    </ResponseField>
+    
+    <ResponseField name="type" type="string">
+      Always returns `"status_page"`
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="title" type="string">
+  The title of the post
+</ResponseField>
+
+<ResponseField name="starts_at" type="datetime">
+  The date and time when the post becomes effective (for maintenance posts)
+</ResponseField>
+
+<ResponseField name="ends_at" type="datetime">
+  The date and time when the post is concluded (for maintenance posts)
+</ResponseField>
+
+<ResponseField name="linked_resource" type="object">
+  Reference to a linked resource (e.g., an incident)
+</ResponseField>
+
+<ResponseField name="postmortem" type="object">
+  Reference to a postmortem document (if applicable)
+</ResponseField>
+
+<ResponseField name="updates" type="array">
+  List of post updates (only included if requested via `include` parameter)
+  
+  <Expandable title="Post Update Object">
+    <ResponseField name="id" type="string">
+      The unique identifier of the post update
+    </ResponseField>
+    
+    <ResponseField name="message" type="string">
+      The message text of the update
+    </ResponseField>
+    
+    <ResponseField name="status" type="object">
+      The status reference (e.g., investigating, identified, monitoring, resolved)
+    </ResponseField>
+    
+    <ResponseField name="severity" type="object">
+      The severity reference (e.g., minor, major, critical)
+    </ResponseField>
+    
+    <ResponseField name="impacted_services" type="array">
+      List of impacted services with their impact levels
+    </ResponseField>
+    
+    <ResponseField name="reported_at" type="datetime">
+      The date and time when the update was reported
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Example Usage
+
+<CodeGroup>
+```bash Natural Language
+"Show me the details of status page post POST123"
+```
+
+```bash With Updates
+"Get status page post POST123 with all updates"
+```
+
+```bash Check Maintenance
+"What are the details of the maintenance post POST123?"
+```
+</CodeGroup>
+
+## Use Cases
+
+- **Review incident communication** - See what was communicated about an incident
+- **Check maintenance schedule** - View maintenance window timing and details
+- **Audit post updates** - Review the timeline of updates posted
+- **Verify messaging** - Confirm the content and status of communications
+- **Track impact** - See which services were reported as impacted
+
+## Response Example
+
+```json
+{
+  "id": "POST123",
+  "type": "status_page_post",
+  "post_type": "incident",
+  "title": "API Latency Issues",
+  "status_page": {
+    "id": "PSTATUS1",
+    "type": "status_page"
+  },
+  "starts_at": "2024-01-15T14:00:00Z",
+  "ends_at": "2024-01-15T16:30:00Z",
+  "updates": [
+    {
+      "id": "UPDATE1",
+      "message": "We are investigating increased API latency",
+      "status": {
+        "id": "investigating"
+      },
+      "severity": {
+        "id": "major"
+      },
+      "reported_at": "2024-01-15T14:00:00Z"
+    },
+    {
+      "id": "UPDATE2",
+      "message": "Issue has been resolved",
+      "status": {
+        "id": "resolved"
+      },
+      "severity": {
+        "id": "major"
+      },
+      "reported_at": "2024-01-15T16:30:00Z"
+    }
+  ]
+}
+```
+
+## Post Types Explained
+
+### Incident
+Represents an unplanned service disruption or degradation. Used to communicate ongoing issues to customers.
+
+### Maintenance
+Represents a planned maintenance window. Used to notify customers of scheduled service interruptions.
+
+## Related Tools
+
+- [List Status Pages](/tools/status-pages/list-status-pages) - View all status pages
+- [Create Status Page Post](/tools/status-pages/create-post) - Create a new post
+- [Create Status Page Post Update](/tools/status-pages/create-update) - Add an update to this post

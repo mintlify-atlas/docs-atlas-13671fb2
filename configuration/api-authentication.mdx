@@ -1,0 +1,199 @@
+---
+title: "API Authentication"
+description: "Set up PagerDuty API authentication for the MCP server"
+---
+
+The PagerDuty MCP Server requires a User API Token to authenticate with your PagerDuty account. This guide walks you through creating and configuring your API token.
+
+## Creating a PagerDuty User API Token
+
+To obtain a PagerDuty User API Token, follow these steps:
+
+<Steps>
+  <Step title="Navigate to User Settings">
+    Click on your user profile icon in PagerDuty, then select **My Profile** and then **User Settings**.
+
+    <Note>
+      For **Freemium** accounts, the permissions for generating User API tokens are limited to the user role as defined in the [PagerDuty user roles documentation](https://support.pagerduty.com/main/docs/user-roles).
+    </Note>
+  </Step>
+
+  <Step title="Access API Settings">
+    In your user settings, locate the **API Access** section.
+  </Step>
+
+  <Step title="Generate Token">
+    Click the **Create API User Token** button and follow the prompts to generate a new token.
+  </Step>
+
+  <Step title="Store Securely">
+    **Copy the generated token and store it securely**. You will need this token to configure the MCP server.
+
+    <Warning>
+      The token will only be displayed once. If you lose it, you'll need to generate a new one.
+    </Warning>
+  </Step>
+</Steps>
+
+## Token Permissions and Limitations
+
+User API tokens inherit the permissions of the user who created them. This means:
+
+- The token has the same access level as your user account
+- Any actions performed through the MCP server are subject to your user role permissions
+- For Freemium accounts, permissions are more limited compared to paid accounts
+- The token can be revoked at any time from your user settings
+
+<Info>
+  Use of the PagerDuty User API Token is subject to the [PagerDuty Developer Agreement](https://developer.pagerduty.com/docs/pagerduty-developer-agreement).
+</Info>
+
+## Setting Up Environment Variables
+
+The MCP server expects your API token to be provided via the `PAGERDUTY_USER_API_KEY` environment variable. How you configure this depends on your MCP client.
+
+### VS Code
+
+```json settings.json
+{
+  "mcp": {
+    "inputs": [
+      {
+        "type": "promptString",
+        "id": "pagerduty-api-key",
+        "description": "PagerDuty API Key",
+        "password": true
+      }
+    ],
+    "servers": {
+      "pagerduty-mcp": {
+        "type": "stdio",
+        "command": "uvx",
+        "args": ["pagerduty-mcp", "--enable-write-tools"],
+        "env": {
+          "PAGERDUTY_USER_API_KEY": "${input:pagerduty-api-key}"
+        }
+      }
+    }
+  }
+}
+```
+
+VS Code will securely prompt you for the API key when the server starts.
+
+### Cursor
+
+```json settings.json
+{
+  "mcpServers": {
+    "pagerduty-mcp": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": ["pagerduty-mcp", "--enable-write-tools"],
+      "env": {
+        "PAGERDUTY_USER_API_KEY": "${input:pagerduty-api-key}"
+      }
+    }
+  }
+}
+```
+
+Cursor will prompt you for the API key using a secure input dialog.
+
+### Claude Desktop
+
+```json claude_desktop_config.json
+{
+  "mcpServers": {
+    "pagerduty-mcp": {
+      "command": "uvx",
+      "args": ["pagerduty-mcp", "--enable-write-tools"],
+      "env": {
+        "PAGERDUTY_USER_API_KEY": "your-pagerduty-api-key-here"
+      }
+    }
+  }
+}
+```
+
+<Warning>
+  Unlike VS Code and Cursor, Claude Desktop requires you to store your API key directly in the configuration file. See [Security Best Practices](#security-best-practices) below.
+</Warning>
+
+### Docker
+
+When running with Docker, pass the API key as an environment variable:
+
+```bash
+docker run -i --rm \
+  -e PAGERDUTY_USER_API_KEY="your-api-key-here" \
+  pagerduty-mcp:latest --enable-write-tools
+```
+
+## Regional API Endpoints
+
+By default, the MCP server connects to the US region API endpoint (`https://api.pagerduty.com`). If your PagerDuty account is located in the EU region, you'll need to configure the regional endpoint.
+
+See [Regional Endpoints](/configuration/regional-endpoints) for detailed instructions.
+
+## Security Best Practices
+
+<AccordionGroup>
+  <Accordion title="Use secure input prompts when available">
+    VS Code and Cursor support secure input prompts that don't store credentials in plain text configuration files. Always use these when available.
+  </Accordion>
+
+  <Accordion title="Protect configuration files">
+    If you must store credentials in configuration files (like with Claude Desktop):
+    - Ensure the file has appropriate permissions (readable only by your user account)
+    - Never commit configuration files with credentials to version control
+    - Consider using environment variables instead of hardcoded values
+  </Accordion>
+
+  <Accordion title="Rotate tokens regularly">
+    Periodically generate new API tokens and revoke old ones to minimize security risks.
+  </Accordion>
+
+  <Accordion title="Use read-only mode when possible">
+    By default, the MCP server runs in read-only mode. Only enable write operations when necessary using the `--enable-write-tools` flag.
+  </Accordion>
+
+  <Accordion title="Monitor token usage">
+    Keep track of your API token usage in PagerDuty to detect any unauthorized access.
+  </Accordion>
+</AccordionGroup>
+
+## Troubleshooting Authentication Issues
+
+<AccordionGroup>
+  <Accordion title="Error: An API key is required to call the PagerDuty API">
+    This error means the `PAGERDUTY_USER_API_KEY` environment variable is not set or is empty. Verify your configuration includes the environment variable and that your client is passing it correctly.
+  </Accordion>
+
+  <Accordion title="401 Unauthorized errors">
+    - Verify your API token is correct and hasn't been revoked
+    - Check that you copied the entire token without truncation
+    - Ensure the token belongs to a user with appropriate permissions
+  </Accordion>
+
+  <Accordion title="Token not being prompted in VS Code/Cursor">
+    Make sure you've configured the `inputs` section in your settings and are using the correct reference syntax `${input:pagerduty-api-key}`.
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Understanding Write Mode" icon="pen" href="/configuration/write-mode">
+    Learn about read-only vs write operations
+  </Card>
+  <Card title="Regional Endpoints" icon="globe" href="/configuration/regional-endpoints">
+    Configure EU region API endpoints
+  </Card>
+  <Card title="Client Integration" icon="plug" href="/clients/vscode">
+    Set up your preferred MCP client
+  </Card>
+  <Card title="Security Best Practices" icon="shield" href="/guides/security-best-practices">
+    Comprehensive security guidance
+  </Card>
+</CardGroup>

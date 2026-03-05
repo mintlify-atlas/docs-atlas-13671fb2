@@ -1,0 +1,125 @@
+---
+title: "list_teams"
+description: "List teams in your PagerDuty account"
+---
+
+## Overview
+
+Retrieves a list of teams from your PagerDuty account with support for filtering and scoping to specific team sets.
+
+<Info>
+This is a **read-only** tool that does not modify any data in your PagerDuty account.
+</Info>
+
+## Parameters
+
+All parameters are optional:
+
+<ParamField query="scope" type="string" default="all">
+  Scope of the query:
+  - `all` - Returns all teams in the account
+  - `my` - Returns only teams the authenticated user is a member of (requires user token)
+</ParamField>
+
+<ParamField query="query" type="string">
+  Filter teams by name. Returns teams whose name matches the query string (partial matches supported).
+</ParamField>
+
+<ParamField query="limit" type="integer" default="25">
+  Maximum number of teams to return. Must be between 1 and 100.
+</ParamField>
+
+## Response
+
+Returns a list of team objects. Each team includes:
+
+<ResponseField name="id" type="string">
+  The unique identifier for the team
+</ResponseField>
+
+<ResponseField name="name" type="string">
+  The name of the team
+</ResponseField>
+
+<ResponseField name="summary" type="string">
+  A short description of the team
+</ResponseField>
+
+<ResponseField name="description" type="string">
+  The full description of the team
+</ResponseField>
+
+<ResponseField name="type" type="string">
+  Always "team"
+</ResponseField>
+
+## Example Usage
+
+### List all teams
+```
+Show me all teams in PagerDuty
+```
+
+### List teams you belong to
+```
+What teams am I a member of?
+```
+
+### Search for teams by name
+```
+Find teams with "engineering" in the name
+```
+
+### Find a specific team
+```
+Is there a team called "Backend Services"?
+```
+
+## Understanding Team Scopes
+
+### All Teams (scope="all")
+
+Returns all teams in the PagerDuty account. Use this when:
+- Auditing team structure across the organization
+- Finding teams by name without knowing if you're a member
+- Generating reports on all teams
+
+### My Teams (scope="my")
+
+Returns only teams where the authenticated user is a member. This requires:
+- A user token (not an account-level API token)
+- The user to be a member of at least one team
+
+<Warning>
+If you use `scope="my"` with an account-level API token, you'll receive an error. Use a user token instead or switch to `scope="all"`.
+</Warning>
+
+## Common Use Cases
+
+- **Team discovery** - Find teams in your organization
+- **Membership verification** - Check which teams you belong to
+- **Organizational structure** - Map out team hierarchy
+- **Team selection** - Find team IDs for other operations
+- **Auditing** - Review all teams for compliance or cleanup
+- **Integration setup** - Identify teams for service assignments
+
+## Response Pagination
+
+This tool automatically handles pagination and returns all matching teams up to the specified limit. For accounts with many teams (>100), you may need to use the `query` parameter to narrow results.
+
+## Related Tools
+
+<CardGroup cols={2}>
+  <Card title="get_team" icon="users" href="/tools/teams/get-team">
+    Get details for a specific team
+  </Card>
+  <Card title="list_team_members" icon="user" href="/tools/teams/manage-members">
+    View team members
+  </Card>
+  <Card title="create_team" icon="plus" href="/tools/teams/create-team">
+    Create a new team (write mode)
+  </Card>
+  <Card title="list_schedules" icon="calendar" href="/tools/schedules/list-schedules">
+    List schedules by team
+  </Card>
+</CardGroup>

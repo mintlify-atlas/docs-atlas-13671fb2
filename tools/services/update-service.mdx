@@ -1,0 +1,208 @@
+---
+title: "update_service"
+description: "Update an existing service in PagerDuty"
+icon: "pen"
+---
+
+## Overview
+
+Updates the configuration of an existing service in your PagerDuty account. You can modify the service name, description, escalation policy, and team associations.
+
+<Warning>
+This is a **write** tool that modifies your PagerDuty account. You must enable write mode with the `--enable-write-tools` flag to use this tool.
+</Warning>
+
+## Parameters
+
+<ParamField path="service_id" type="string" required>
+  The ID of the service to update.
+  
+  Example: `PSERVICE1`
+</ParamField>
+
+<ParamField path="service_data" type="ServiceCreate" required>
+  The updated service data.
+  
+  <Expandable title="ServiceCreate Fields">
+    <ParamField path="service" type="Service" required>
+      The service object with updated values.
+      
+      <Expandable title="Service Fields">
+        <ParamField path="name" type="string">
+          The updated name of the service.
+          
+          Example: `"Production API Service v2"`
+        </ParamField>
+        
+        <ParamField path="description" type="string">
+          The updated description of the service.
+          
+          Example: `"Updated REST API service for production environment"`
+        </ParamField>
+        
+        <ParamField path="escalation_policy" type="EscalationPolicyReference" required>
+          Reference to the escalation policy for this service. Only the `id` field is required.
+          
+          <Expandable title="EscalationPolicyReference">
+            <ParamField path="id" type="string" required>
+              The ID of the escalation policy.
+              
+              Example: `"PEPOLICY123"`
+            </ParamField>
+          </Expandable>
+          
+          <Note>
+          The `summary` field is server-generated and will be ignored if provided.
+          </Note>
+        </ParamField>
+        
+        <ParamField path="teams" type="TeamReference[]">
+          Updated list of teams to associate with the service.
+          
+          <Expandable title="TeamReference">
+            <ParamField path="id" type="string" required>
+              The ID of the team.
+              
+              Example: `"PTEAM1"`
+            </ParamField>
+          </Expandable>
+        </ParamField>
+      </Expandable>
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+## Response
+
+Returns the updated `Service` object with all current field values.
+
+<ResponseField name="id" type="string">
+  The unique identifier for the service.
+</ResponseField>
+
+<ResponseField name="type" type="string">
+  The type of the object (always `"service"`).
+</ResponseField>
+
+<ResponseField name="name" type="string">
+  The updated name of the service.
+</ResponseField>
+
+<ResponseField name="description" type="string">
+  The updated description of the service.
+</ResponseField>
+
+<ResponseField name="escalation_policy" type="EscalationPolicyReference">
+  Reference to the escalation policy associated with this service.
+</ResponseField>
+
+<ResponseField name="teams" type="TeamReference[]">
+  List of teams associated with the service.
+</ResponseField>
+
+## Example Usage
+
+<CodeGroup>
+```text Natural Language
+Update service PSERVICE1 to use escalation policy PEPOLICY456
+```
+
+```text Change Name
+Rename service PSERVICE1 to "Updated Production Service"
+```
+
+```text Update Teams
+Update service PSERVICE1 to be assigned to teams PTEAM1 and PTEAM2
+```
+</CodeGroup>
+
+## Example Request
+
+```json
+{
+  "service_id": "PSERVICE1",
+  "service_data": {
+    "service": {
+      "name": "Production API Service v2",
+      "description": "Updated REST API service with improved monitoring",
+      "escalation_policy": {
+        "id": "PEPOLICY456"
+      },
+      "teams": [
+        {
+          "id": "PTEAM1"
+        },
+        {
+          "id": "PTEAM2"
+        }
+      ]
+    }
+  }
+}
+```
+
+## Example Response
+
+```json
+{
+  "id": "PSERVICE1",
+  "type": "service",
+  "name": "Production API Service v2",
+  "description": "Updated REST API service with improved monitoring",
+  "escalation_policy": {
+    "id": "PEPOLICY456",
+    "type": "escalation_policy_reference",
+    "summary": "Updated Escalation Policy"
+  },
+  "teams": [
+    {
+      "id": "PTEAM1",
+      "type": "team_reference",
+      "summary": "Backend Engineering"
+    },
+    {
+      "id": "PTEAM2",
+      "type": "team_reference",
+      "summary": "DevOps Team"
+    }
+  ]
+}
+```
+
+## Important Notes
+
+<Note>
+**Escalation Policy Reference**: When updating a service, the `escalation_policy` reference only requires the `id` field. The `summary` field is server-generated and will be ignored if you provide it.
+
+Example: `{"id": "PEPOLICY456"}`
+</Note>
+
+<Warning>
+Before updating a service, ensure that:
+- The service ID exists and is valid
+- The escalation policy ID exists and is valid
+- Any team IDs you reference exist in your account
+- You have the necessary permissions to update services
+- Active incidents on this service may be affected by escalation policy changes
+</Warning>
+
+<Info>
+**Update Behavior**: The update operation replaces the entire service configuration. Make sure to include all fields you want to keep, not just the ones you want to change.
+</Info>
+
+## Related Tools
+
+<CardGroup cols={2}>
+  <Card title="list_services" icon="list" href="/tools/services/list-services">
+    List all services
+  </Card>
+  <Card title="get_service" icon="magnifying-glass" href="/tools/services/get-service">
+    View current service details
+  </Card>
+  <Card title="create_service" icon="plus" href="/tools/services/create-service">
+    Create a new service
+  </Card>
+  <Card title="list_escalation_policies" icon="arrow-up" href="/tools/escalation-policies/list-policies">
+    Find escalation policy IDs
+  </Card>
+</CardGroup>

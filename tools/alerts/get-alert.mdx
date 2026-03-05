@@ -1,0 +1,228 @@
+---
+title: "get_alert_from_incident"
+description: "Retrieve a specific alert from an incident by ID"
+icon: "magnifying-glass"
+---
+
+## Overview
+
+Retrieves detailed information about a specific alert within an incident. Use this tool when you need to examine the full details of a particular alert.
+
+<Info>
+This is a **read-only** tool. It retrieves data without modifying your PagerDuty account.
+</Info>
+
+## Parameters
+
+<ParamField path="incident_id" type="string" required>
+  The ID of the incident containing the alert.
+  
+  Example: `Q1XQPZ3PYQ0ABC`
+</ParamField>
+
+<ParamField path="alert_id" type="string" required>
+  The ID of the alert to retrieve.
+  
+  Example: `PALERT123ABC`
+</ParamField>
+
+## Response
+
+Returns a single `Alert` object with complete details.
+
+<ResponseField name="id" type="string" required>
+  The unique identifier for the alert.
+</ResponseField>
+
+<ResponseField name="type" type="string" required>
+  The type of the object (always `"alert"`).
+</ResponseField>
+
+<ResponseField name="summary" type="string" required>
+  A short summary of the alert.
+</ResponseField>
+
+<ResponseField name="self" type="string" required>
+  The API URL at which this alert is accessible.
+</ResponseField>
+
+<ResponseField name="html_url" type="string" required>
+  The URL at which this alert is accessible in the PagerDuty UI.
+</ResponseField>
+
+<ResponseField name="created_at" type="datetime" required>
+  The date/time when this alert was created.
+</ResponseField>
+
+<ResponseField name="status" type="string" required>
+  The current status of the alert (e.g., `triggered`, `resolved`).
+</ResponseField>
+
+<ResponseField name="alert_key" type="string" required>
+  The unique key identifying this alert.
+</ResponseField>
+
+<ResponseField name="service" type="ServiceReference">
+  Reference to the service this alert is associated with.
+  
+  <Expandable title="ServiceReference">
+    <ResponseField name="id" type="string">
+      The ID of the service.
+    </ResponseField>
+    
+    <ResponseField name="type" type="string">
+      The type (always `"service_reference"`).
+    </ResponseField>
+    
+    <ResponseField name="summary" type="string">
+      A short summary of the service.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="incident" type="IncidentReference">
+  Reference to the incident this alert is associated with.
+  
+  <Expandable title="IncidentReference">
+    <ResponseField name="id" type="string">
+      The ID of the incident.
+    </ResponseField>
+    
+    <ResponseField name="type" type="string">
+      The type of the reference.
+    </ResponseField>
+    
+    <ResponseField name="summary" type="string">
+      A short summary of the incident.
+    </ResponseField>
+    
+    <ResponseField name="self" type="string">
+      The API URL for the incident.
+    </ResponseField>
+    
+    <ResponseField name="html_url" type="string">
+      The UI URL for the incident.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="body" type="AlertBody">
+  The detailed body of the alert.
+  
+  <Expandable title="AlertBody">
+    <ResponseField name="type" type="string">
+      The type of alert body.
+    </ResponseField>
+    
+    <ResponseField name="contexts" type="array">
+      Additional context information for the alert.
+    </ResponseField>
+    
+    <ResponseField name="details" type="object">
+      Detailed information about the alert, which varies based on the integration and alert type.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="severity" type="string">
+  The severity level of the alert (e.g., `critical`, `error`, `warning`, `info`).
+</ResponseField>
+
+<ResponseField name="suppressed" type="boolean">
+  Whether the alert is suppressed.
+</ResponseField>
+
+<ResponseField name="integration" type="IntegrationReference">
+  Reference to the integration that created this alert.
+  
+  <Expandable title="IntegrationReference">
+    <ResponseField name="id" type="string">
+      The ID of the integration.
+    </ResponseField>
+    
+    <ResponseField name="type" type="string">
+      The type of the integration.
+    </ResponseField>
+    
+    <ResponseField name="summary" type="string">
+      A short summary of the integration.
+    </ResponseField>
+    
+    <ResponseField name="self" type="string">
+      The API URL for the integration.
+    </ResponseField>
+    
+    <ResponseField name="html_url" type="string">
+      The UI URL for the integration.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Example Usage
+
+<CodeGroup>
+```text Natural Language
+Show me alert PALERT123ABC from incident Q1XQPZ3PYQ0ABC
+```
+
+```text Get Alert Details
+Get details for alert PALERT123ABC
+```
+</CodeGroup>
+
+## Example Response
+
+```json
+{
+  "id": "PALERT123ABC",
+  "type": "alert",
+  "summary": "High CPU usage on web-server-01",
+  "self": "https://api.pagerduty.com/alerts/PALERT123ABC",
+  "html_url": "https://myaccount.pagerduty.com/alerts/PALERT123ABC",
+  "created_at": "2024-03-15T14:30:00Z",
+  "status": "triggered",
+  "alert_key": "cpu-high-web-01",
+  "service": {
+    "id": "PSERVICE1",
+    "type": "service_reference",
+    "summary": "Production Web Service"
+  },
+  "incident": {
+    "id": "Q1XQPZ3PYQ0ABC",
+    "type": "incident_reference",
+    "summary": "High CPU usage detected",
+    "self": "https://api.pagerduty.com/incidents/Q1XQPZ3PYQ0ABC",
+    "html_url": "https://myaccount.pagerduty.com/incidents/Q1XQPZ3PYQ0ABC"
+  },
+  "body": {
+    "type": "alert_body",
+    "contexts": [],
+    "details": {
+      "cpu_usage": "95%",
+      "hostname": "web-server-01",
+      "timestamp": "2024-03-15T14:30:00Z",
+      "metric": "system.cpu.usage"
+    }
+  },
+  "severity": "critical",
+  "suppressed": false,
+  "integration": {
+    "id": "PINTEGRATION1",
+    "type": "inbound_integration_reference",
+    "summary": "Datadog Integration",
+    "self": "https://api.pagerduty.com/services/PSERVICE1/integrations/PINTEGRATION1",
+    "html_url": "https://myaccount.pagerduty.com/services/PSERVICE1/integrations/PINTEGRATION1"
+  }
+}
+```
+
+## Related Tools
+
+<CardGroup cols={2}>
+  <Card title="list_alerts_from_incident" icon="list" href="/tools/alerts/list-alerts">
+    List all alerts for an incident
+  </Card>
+  <Card title="get_incident" icon="fire" href="/tools/incidents/get-incident">
+    Get incident details
+  </Card>
+</CardGroup>

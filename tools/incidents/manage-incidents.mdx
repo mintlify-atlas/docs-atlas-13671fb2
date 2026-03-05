@@ -1,0 +1,246 @@
+---
+title: "manage_incidents"
+description: "Bulk update incident status, urgency, assignment, or escalation level"
+---
+
+<Warning>
+**Tool Name:** `manage_incidents`
+
+**Category:** Incidents
+
+**Mode:** Write (requires `--enable-write-tools` flag)
+</Warning>
+
+## Overview
+
+The `manage_incidents` tool allows you to update one or more incidents simultaneously. You can change the status (acknowledge or resolve), modify urgency, reassign to different users, or escalate to a higher level.
+
+<Note>
+This tool requires write mode to be enabled. See [Write Mode Configuration](/tools/read-vs-write) for details.
+</Note>
+
+## Parameters
+
+<ParamField path="incident_ids" type="list[string]" required>
+  List of incident IDs to update. Can be one or more incident IDs.
+  
+  **Example:** `["Q1234567890ABCDE", "Q0987654321ZYXWV"]`
+</ParamField>
+
+<ParamField path="status" type="string" optional>
+  Change the status of the incidents.
+  
+  **Allowed values:**
+  - `acknowledged` - Mark incidents as acknowledged
+  - `resolved` - Mark incidents as resolved
+  
+  <Note>
+  You cannot change an incident back to `triggered` status using this tool.
+  </Note>
+  
+  **Example:** `"acknowledged"`
+</ParamField>
+
+<ParamField path="urgency" type="string" optional>
+  Change the urgency level of the incidents.
+  
+  **Allowed values:**
+  - `high` - High urgency
+  - `low` - Low urgency
+  
+  **Example:** `"high"`
+</ParamField>
+
+<ParamField path="assignement" type="UserReference" optional>
+  Reassign the incidents to a different user.
+  
+  <Note>
+  Note: The parameter name has a typo in the API ("assignement" instead of "assignment"). Use the exact spelling shown.
+  </Note>
+  
+  <ParamField path="id" type="string" required>
+    The ID of the user to assign the incidents to.
+    
+    **Example:** `"PXXXXXX"`
+  </ParamField>
+  
+  **Example:** `{"id": "PXXXXXX"}`
+</ParamField>
+
+<ParamField path="escalation_level" type="integer" optional>
+  Escalate the incidents to a specific level in the escalation policy.
+  
+  **Example:** `2` (escalate to level 2)
+</ParamField>
+
+## Usage Examples
+
+### Acknowledge multiple incidents
+
+```python
+{
+  "incident_ids": ["Q1234567890ABCDE", "Q0987654321ZYXWV"],
+  "status": "acknowledged"
+}
+```
+
+### Resolve an incident
+
+```python
+{
+  "incident_ids": ["Q1234567890ABCDE"],
+  "status": "resolved"
+}
+```
+
+### Reassign an incident to another user
+
+```python
+{
+  "incident_ids": ["Q1234567890ABCDE"],
+  "assignement": {
+    "id": "PXXXXXX"
+  }
+}
+```
+
+### Change urgency to high
+
+```python
+{
+  "incident_ids": ["Q1234567890ABCDE"],
+  "urgency": "high"
+}
+```
+
+### Escalate to level 2
+
+```python
+{
+  "incident_ids": ["Q1234567890ABCDE"],
+  "escalation_level": 2
+}
+```
+
+### Combine multiple updates
+
+```python
+{
+  "incident_ids": ["Q1234567890ABCDE"],
+  "status": "acknowledged",
+  "urgency": "high"
+}
+```
+
+<Warning>
+When multiple update operations are specified, they are applied sequentially. The response only reflects the final operation. Consider this when combining multiple updates.
+</Warning>
+
+## Response Format
+
+Returns a `ListResponseModel[Incident]` containing the updated incidents.
+
+<ResponseField name="response" type="list[Incident]">
+  List of updated incident objects.
+  
+  <ResponseField name="id" type="string">
+    The incident ID.
+  </ResponseField>
+  
+  <ResponseField name="incident_number" type="integer">
+    The incident number.
+  </ResponseField>
+  
+  <ResponseField name="status" type="string">
+    Updated status of the incident.
+  </ResponseField>
+  
+  <ResponseField name="title" type="string">
+    The incident title.
+  </ResponseField>
+  
+  <ResponseField name="updated_at" type="datetime">
+    When the incident was last updated (will reflect the recent change).
+  </ResponseField>
+  
+  <ResponseField name="service" type="ServiceReference">
+    The associated service.
+  </ResponseField>
+  
+  <ResponseField name="assignments" type="list[Assignment]" optional>
+    Current assignments (updated if reassignment was performed).
+  </ResponseField>
+</ResponseField>
+
+## Common Errors
+
+<Warning>
+**Write mode not enabled**
+
+```
+Write operations are disabled. Enable with --enable-write-tools flag.
+```
+
+**Solution:** Restart the MCP server with the `--enable-write-tools` flag.
+</Warning>
+
+<Warning>
+**Incident not found**
+
+```
+404 Not Found: One or more incidents were not found
+```
+
+**Solution:** Verify all incident IDs are correct and accessible.
+</Warning>
+
+<Warning>
+**Invalid user for assignment**
+
+```
+400 Bad Request: User not found or not authorized
+```
+
+**Solution:** Verify the user ID is correct and the user has access to the service.
+</Warning>
+
+<Warning>
+**No updates specified**
+
+If you don't specify any update fields (status, urgency, assignment, or escalation_level), the tool will return an empty response as no changes were made.
+
+**Solution:** Specify at least one field to update.
+</Warning>
+
+## Best Practices
+
+<Tip>
+- **Acknowledge incidents** when you start investigating to signal ownership
+- **Update urgency** if the impact is different than initially assessed
+- **Reassign incidents** when the appropriate subject matter expert is identified
+- **Resolve incidents** only when the issue is fully mitigated and verified
+- **Use bulk updates** to efficiently manage related incidents
+</Tip>
+
+## Related Tools
+
+<CardGroup cols={2}>
+  <Card title="list_incidents" icon="list" href="/tools/incidents/list-incidents">
+    Find incidents to manage
+  </Card>
+  <Card title="get_incident" icon="magnifying-glass" href="/tools/incidents/get-incident">
+    Get details before updating
+  </Card>
+  <Card title="add_note_to_incident" icon="comment" href="/tools/incidents/add-note">
+    Document investigation progress
+  </Card>
+  <Card title="add_responders" icon="user-plus" href="/tools/incidents/add-responders">
+    Request additional help
+  </Card>
+</CardGroup>
+
+## Source Reference
+
+**Function:** `manage_incidents` in `pagerduty_mcp/tools/incidents.py:141`
+
+**Models:** `IncidentManageRequest`, `Incident` in `pagerduty_mcp/models/incidents.py`

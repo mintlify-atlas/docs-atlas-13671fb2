@@ -1,0 +1,233 @@
+---
+title: "create_incident"
+description: "Create a new incident manually in PagerDuty"
+---
+
+<Warning>
+**Tool Name:** `create_incident`
+
+**Category:** Incidents
+
+**Mode:** Write (requires `--enable-write-tools` flag)
+</Warning>
+
+## Overview
+
+The `create_incident` tool allows you to manually create a new incident in PagerDuty. This is useful when you need to report an issue that wasn't automatically detected by monitoring systems.
+
+<Note>
+This tool requires write mode to be enabled. See [Write Mode Configuration](/tools/read-vs-write) for details.
+</Note>
+
+## Parameters
+
+<ParamField path="incident" type="IncidentCreate" required>
+  The incident creation request object.
+  
+  <ParamField path="title" type="string" required>
+    The title of the incident. Should be a succinct description of the issue.
+    
+    **Example:** `"Database connection timeout on production"`
+  </ParamField>
+  
+  <ParamField path="service" type="ServiceReference" required>
+    The service associated with the incident.
+    
+    <ParamField path="id" type="string" required>
+      The ID of the service.
+      
+      **Example:** `"PXXXXXX"`
+    </ParamField>
+    
+    <ParamField path="type" type="string" default="service_reference">
+      Always "service_reference"
+    </ParamField>
+  </ParamField>
+  
+  <ParamField path="urgency" type="string" default="high">
+    The urgency level of the incident.
+    
+    **Allowed values:**
+    - `high` - High urgency (default)
+    - `low` - Low urgency
+  </ParamField>
+  
+  <ParamField path="body" type="IncidentBody" optional>
+    Additional details about the incident.
+    
+    <ParamField path="details" type="string" required>
+      Free-form text providing more context about the incident.
+      
+      **Example:** `"Users are experiencing 504 Gateway Timeout errors when accessing the dashboard. Database connection pool appears to be exhausted."`
+    </ParamField>
+    
+    <ParamField path="type" type="string" default="incident_body">
+      Always "incident_body"
+    </ParamField>
+  </ParamField>
+  
+  <ParamField path="type" type="string" default="incident">
+    Always "incident" (automatically set)
+  </ParamField>
+</ParamField>
+
+## Usage Examples
+
+### Create a high urgency incident
+
+```python
+{
+  "incident": {
+    "title": "Production API returning 500 errors",
+    "service": {
+      "id": "PXXXXXX",
+      "type": "service_reference"
+    },
+    "urgency": "high",
+    "body": {
+      "details": "Multiple customers reporting 500 errors on /api/users endpoint. Started approximately 10 minutes ago.",
+      "type": "incident_body"
+    }
+  }
+}
+```
+
+### Create a low urgency incident
+
+```python
+{
+  "incident": {
+    "title": "Slow query performance on analytics database",
+    "service": {
+      "id": "PYYYYYY",
+      "type": "service_reference"
+    },
+    "urgency": "low",
+    "body": {
+      "details": "Analytics dashboard queries are taking 5-10 seconds. Not customer-facing but should be investigated.",
+      "type": "incident_body"
+    }
+  }
+}
+```
+
+### Create a minimal incident
+
+```python
+{
+  "incident": {
+    "title": "SSL certificate expiring in 7 days",
+    "service": {
+      "id": "PZZZZZZ",
+      "type": "service_reference"
+    }
+  }
+}
+```
+
+## Response Format
+
+Returns the created `Incident` object.
+
+<ResponseField name="id" type="string">
+  The unique ID of the newly created incident.
+</ResponseField>
+
+<ResponseField name="incident_number" type="integer">
+  The incident number (unique across your account).
+</ResponseField>
+
+<ResponseField name="status" type="string">
+  Will be `triggered` for newly created incidents.
+</ResponseField>
+
+<ResponseField name="title" type="string">
+  The title of the incident.
+</ResponseField>
+
+<ResponseField name="created_at" type="datetime">
+  When the incident was created.
+</ResponseField>
+
+<ResponseField name="updated_at" type="datetime">
+  When the incident was last updated.
+</ResponseField>
+
+<ResponseField name="service" type="ServiceReference">
+  The service the incident is associated with.
+</ResponseField>
+
+<ResponseField name="assignments" type="list[Assignment]" optional>
+  Initial assignments based on the service's escalation policy.
+</ResponseField>
+
+## Common Errors
+
+<Warning>
+**Write mode not enabled**
+
+If write tools are not enabled:
+
+```
+Write operations are disabled. Enable with --enable-write-tools flag.
+```
+
+**Solution:** Restart the MCP server with the `--enable-write-tools` flag.
+</Warning>
+
+<Warning>
+**Invalid service ID**
+
+If the service doesn't exist:
+
+```
+404 Not Found: Service not found
+```
+
+**Solution:** Verify the service ID using the `list_services` or `get_service` tool.
+</Warning>
+
+<Warning>
+**Missing required fields**
+
+If required fields are missing:
+
+```
+Validation Error: title is required
+```
+
+**Solution:** Ensure all required fields (title, service) are provided.
+</Warning>
+
+## Best Practices
+
+<Tip>
+- Use descriptive, actionable titles that clearly indicate the problem
+- Include detailed context in the body to help responders triage quickly
+- Set appropriate urgency based on business impact
+- Verify the service ID before creating the incident
+- Consider using automatic incident creation through monitoring integrations for routine issues
+</Tip>
+
+## Related Tools
+
+<CardGroup cols={2}>
+  <Card title="manage_incidents" icon="sliders" href="/tools/incidents/manage-incidents">
+    Update incident status or assignment
+  </Card>
+  <Card title="add_note_to_incident" icon="comment" href="/tools/incidents/add-note">
+    Add notes to track investigation
+  </Card>
+  <Card title="add_responders" icon="user-plus" href="/tools/incidents/add-responders">
+    Request additional responders
+  </Card>
+  <Card title="list_services" icon="server" href="/tools/services/list-services">
+    Find the correct service ID
+  </Card>
+</CardGroup>
+
+## Source Reference
+
+**Function:** `create_incident` in `pagerduty_mcp/tools/incidents.py:72`
+
+**Models:** `IncidentCreateRequest`, `IncidentCreate`, `Incident` in `pagerduty_mcp/models/incidents.py`

@@ -1,0 +1,161 @@
+---
+title: "get_event_orchestration_router"
+description: "Get the router configuration for an event orchestration"
+---
+
+## Overview
+
+Retrieves the router configuration for a specific event orchestration. The router determines how incoming events are routed to different services based on matching rules.
+
+<Info>
+This is a **read-only** tool that queries your PagerDuty account without making any changes.
+</Info>
+
+## Parameters
+
+<ParamField path="orchestration_id" type="string" required>
+  The ID of the event orchestration to retrieve router configuration for
+</ParamField>
+
+## Response
+
+Returns an `EventOrchestrationRouter` object:
+
+<ResponseField name="orchestration_path" type="EventOrchestrationPath">
+  The orchestration router path configuration
+  
+  <Expandable title="EventOrchestrationPath properties">
+    <ResponseField name="type" type="string">
+      Always "router" (indicates this is a router-type set of rules)
+    </ResponseField>
+    
+    <ResponseField name="parent" type="EventOrchestrationParent">
+      Reference to the parent Global Event Orchestration (read-only)
+      
+      <Expandable title="properties">
+        <ResponseField name="id" type="string">
+          Parent orchestration ID
+        </ResponseField>
+        <ResponseField name="type" type="string">
+          Always "event_orchestration_reference"
+        </ResponseField>
+        <ResponseField name="self" type="string">
+          API URL for the parent orchestration
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+    
+    <ResponseField name="self" type="string">
+      API URL for this router configuration (read-only)
+    </ResponseField>
+    
+    <ResponseField name="sets" type="array">
+      The router contains a single set of rules (the "start" set). Events are evaluated against these rules in order, and routed to a service based on the first matching rule. Maximum length: 1.
+      
+      <Expandable title="EventOrchestrationRuleSet properties">
+        <ResponseField name="id" type="string">
+          ID of this rule set. For routers, this is typically "start".
+        </ResponseField>
+        
+        <ResponseField name="rules" type="array">
+          List of routing rules
+          
+          <Expandable title="EventOrchestrationRule properties">
+            <ResponseField name="id" type="string">
+              Rule ID (read-only)
+            </ResponseField>
+            
+            <ResponseField name="label" type="string">
+              Description of the rule's purpose
+            </ResponseField>
+            
+            <ResponseField name="conditions" type="array">
+              Conditions to match. The rule matches if ANY condition matches.
+              
+              <Expandable title="EventOrchestrationRuleCondition properties">
+                <ResponseField name="expression" type="string">
+                  PCL condition string (e.g., "event.summary matches part 'my service error'")
+                </ResponseField>
+              </Expandable>
+            </ResponseField>
+            
+            <ResponseField name="actions" type="EventOrchestrationRuleActions">
+              Actions to take when this rule matches
+              
+              <Expandable title="properties">
+                <ResponseField name="route_to" type="string">
+                  Service ID to route the event to (e.g., "PSI2I2O")
+                </ResponseField>
+                
+                <ResponseField name="dynamic_route_to" type="object">
+                  Dynamically route based on event payload contents (AIOps customers only)
+                </ResponseField>
+              </Expandable>
+            </ResponseField>
+            
+            <ResponseField name="disabled" type="boolean" default="false">
+              Whether this rule is disabled
+            </ResponseField>
+          </Expandable>
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+    
+    <ResponseField name="catch_all" type="EventOrchestrationCatchAll">
+      Actions to take when no rules match
+      
+      <Expandable title="properties">
+        <ResponseField name="actions" type="EventOrchestrationRuleActions">
+          Default routing actions
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+    
+    <ResponseField name="created_at" type="datetime">
+      Creation timestamp (read-only)
+    </ResponseField>
+    
+    <ResponseField name="created_by" type="UserReference">
+      User who created this configuration (read-only)
+    </ResponseField>
+    
+    <ResponseField name="updated_at" type="datetime">
+      Last update timestamp (read-only)
+    </ResponseField>
+    
+    <ResponseField name="updated_by" type="UserReference">
+      User who last updated this configuration (read-only)
+    </ResponseField>
+    
+    <ResponseField name="version" type="string">
+      Version of these orchestration rules (read-only)
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Usage Examples
+
+### Get router configuration
+
+```
+Show me the router configuration for orchestration P1A2B3C
+```
+
+### View routing rules
+
+```
+What routing rules are configured for orchestration P1A2B3C?
+```
+
+### Check catch-all behavior
+
+```
+Where do unmatched events go for orchestration P1A2B3C?
+```
+
+## Related Tools
+
+- [update_event_orchestration_router](/tools/event-orchestrations/update-router) - Update router configuration (write mode)
+- [append_event_orchestration_router_rule](/tools/event-orchestrations/append-rule) - Add a new routing rule (write mode)
+- [get_event_orchestration](/tools/event-orchestrations/get-orchestration) - Get orchestration details
+- [list_services](/tools/services) - List services to route to
