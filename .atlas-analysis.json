@@ -1,0 +1,249 @@
+{
+  "projectType": "cli-tool",
+  "projectName": "PagerDuty MCP Server",
+  "projectDescription": "Official MCP server for interacting with PagerDuty accounts through AI-enabled clients using the Model Context Protocol.",
+  "theme": "aspen",
+  "primaryColor": "#06AC38",
+  "lightColor": "#10B981",
+  "darkColor": "#059669",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "quickstart",
+              "installation"
+            ]
+          },
+          {
+            "group": "Configuration",
+            "pages": [
+              "configuration/api-authentication",
+              "configuration/write-mode",
+              "configuration/regional-endpoints"
+            ]
+          },
+          {
+            "group": "Client Integration",
+            "pages": [
+              "clients/cursor",
+              "clients/vscode",
+              "clients/claude-desktop"
+            ]
+          },
+          {
+            "group": "Deployment",
+            "pages": [
+              "deployment/docker",
+              "deployment/local-development"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Tools Reference",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "tools/overview",
+              "tools/read-vs-write"
+            ]
+          },
+          {
+            "group": "Incidents",
+            "pages": [
+              "tools/incidents/list-incidents",
+              "tools/incidents/get-incident",
+              "tools/incidents/create-incident",
+              "tools/incidents/manage-incidents",
+              "tools/incidents/add-note",
+              "tools/incidents/add-responders",
+              "tools/incidents/related-incidents"
+            ]
+          },
+          {
+            "group": "Alerts",
+            "pages": [
+              "tools/alerts/list-alerts",
+              "tools/alerts/get-alert"
+            ]
+          },
+          {
+            "group": "Services",
+            "pages": [
+              "tools/services/list-services",
+              "tools/services/get-service",
+              "tools/services/create-service",
+              "tools/services/update-service"
+            ]
+          },
+          {
+            "group": "Schedules & On-Call",
+            "pages": [
+              "tools/schedules/list-schedules",
+              "tools/schedules/get-schedule",
+              "tools/schedules/create-schedule",
+              "tools/schedules/update-schedule",
+              "tools/schedules/create-override",
+              "tools/schedules/list-oncalls"
+            ]
+          },
+          {
+            "group": "Event Orchestrations",
+            "pages": [
+              "tools/event-orchestrations/list-orchestrations",
+              "tools/event-orchestrations/get-orchestration",
+              "tools/event-orchestrations/get-router",
+              "tools/event-orchestrations/update-router",
+              "tools/event-orchestrations/append-rule"
+            ]
+          },
+          {
+            "group": "Teams",
+            "pages": [
+              "tools/teams/list-teams",
+              "tools/teams/get-team",
+              "tools/teams/create-team",
+              "tools/teams/update-team",
+              "tools/teams/delete-team",
+              "tools/teams/manage-members"
+            ]
+          },
+          {
+            "group": "Users",
+            "pages": [
+              "tools/users/get-user-data",
+              "tools/users/list-users"
+            ]
+          },
+          {
+            "group": "Escalation Policies",
+            "pages": [
+              "tools/escalation-policies/list-policies",
+              "tools/escalation-policies/get-policy"
+            ]
+          },
+          {
+            "group": "Incident Workflows",
+            "pages": [
+              "tools/incident-workflows/list-workflows",
+              "tools/incident-workflows/get-workflow",
+              "tools/incident-workflows/start-workflow"
+            ]
+          },
+          {
+            "group": "Change Events",
+            "pages": [
+              "tools/change-events/list-change-events",
+              "tools/change-events/get-change-event"
+            ]
+          },
+          {
+            "group": "Log Entries",
+            "pages": [
+              "tools/log-entries/list-log-entries",
+              "tools/log-entries/get-log-entry"
+            ]
+          },
+          {
+            "group": "Alert Grouping",
+            "pages": [
+              "tools/alert-grouping/list-settings",
+              "tools/alert-grouping/get-setting",
+              "tools/alert-grouping/create-setting",
+              "tools/alert-grouping/update-setting",
+              "tools/alert-grouping/delete-setting"
+            ]
+          },
+          {
+            "group": "Status Pages",
+            "pages": [
+              "tools/status-pages/list-status-pages",
+              "tools/status-pages/get-post",
+              "tools/status-pages/create-post",
+              "tools/status-pages/create-update"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Guides",
+        "groups": [
+          {
+            "group": "Usage Patterns",
+            "pages": [
+              "guides/incident-management",
+              "guides/on-call-management",
+              "guides/orchestration-setup",
+              "guides/security-best-practices"
+            ]
+          },
+          {
+            "group": "Support",
+            "pages": [
+              "guides/troubleshooting",
+              "guides/contributing",
+              "guides/changelog"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Read and write operations for PagerDuty resources via MCP",
+    "Support for incidents, services, schedules, and on-call management",
+    "Event orchestration and workflow automation",
+    "Team and user management capabilities",
+    "Status page management and change event tracking",
+    "Alert grouping and escalation policy control",
+    "Safe read-only mode with optional write operations",
+    "Integration with VS Code, Cursor, and Claude Desktop"
+  ],
+  "publicApiSurface": [
+    "pagerduty-mcp --enable-write-tools",
+    "list_incidents",
+    "get_incident",
+    "create_incident",
+    "manage_incidents",
+    "add_note_to_incident",
+    "add_responders",
+    "list_services",
+    "get_service",
+    "create_service",
+    "update_service",
+    "list_schedules",
+    "get_schedule",
+    "create_schedule",
+    "create_schedule_override",
+    "list_oncalls",
+    "list_event_orchestrations",
+    "get_event_orchestration",
+    "update_event_orchestration_router",
+    "append_event_orchestration_router_rule",
+    "list_teams",
+    "get_team",
+    "create_team",
+    "add_team_member",
+    "remove_team_member",
+    "get_user_data",
+    "list_users",
+    "list_escalation_policies",
+    "get_escalation_policy",
+    "list_incident_workflows",
+    "start_incident_workflow",
+    "list_change_events",
+    "get_change_event",
+    "list_log_entries",
+    "get_log_entry",
+    "list_alert_grouping_settings",
+    "create_alert_grouping_setting",
+    "list_status_pages",
+    "create_status_page_post"
+  ]
+}
